@@ -1,0 +1,31 @@
+
+1.03 & units('mm')
+
+{
+    velocity: Float64 & units('ft/min') = 3.123E9 & units('m/s')
+}
+
+
+
+
+
+1.03 uom 'mm'
+1.03 in 'mm'
+1.03 @ 'mm'
+1.03 @@ 'mm'
+1.03 ~ 'mm'
+1.03 ~~ 'mm'
+1.03__'mm'
+1.03 ~> 'mm'
+1.03 # 'mm'
+1.03 & u'mm'
+
+
+
+
+1.03 ∧ units('mm')
+
+{
+    velocity: Float64 ∧ units('mm/s') = 3.123E9
+}
+

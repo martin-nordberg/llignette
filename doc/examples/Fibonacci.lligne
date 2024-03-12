@@ -1,0 +1,12 @@
+
+fib: Package = {
+
+    NaturalInt64: Type = Int64 & $value >= 0
+
+    @cached
+    fibonacci = fn(n: NaturalInt64) -> NaturalInt64 =>
+        n when n <= 1
+        | fibonacci(n - 1) + fibonacci(n - 2) when n > 1
+
+
+}

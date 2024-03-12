@@ -10,7 +10,7 @@ import {
     type HeteroGraph,
     type TailVertexTraversal
 } from "../HeteroGraph"
-import {someOrNone, type Option} from "../../util/Option";
+import {someOrNone, type Optional} from "../../util/Optional";
 import {type HeteroEdge} from "../Edges";
 
 //=====================================================================================================================
@@ -122,7 +122,7 @@ export class MutableHeteroGraphNtoN<TailVertex extends Keyed, HeadVertex extends
         return this.tailVertices.has(vertex.key)
     }
 
-    headVertexWithKey(key: symbol): Option<HeadVertex> {
+    headVertexWithKey(key: symbol): Optional<HeadVertex> {
         return someOrNone(this.headVertices.get(key))
     }
 
@@ -203,7 +203,7 @@ export class MutableHeteroGraphNtoN<TailVertex extends Keyed, HeadVertex extends
         return this.edgeCount
     }
 
-    tailVertexWithKey(key: symbol): Option<TailVertex> {
+    tailVertexWithKey(key: symbol): Optional<TailVertex> {
         return someOrNone(this.tailVertices.get(key))
     }
 

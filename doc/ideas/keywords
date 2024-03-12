@@ -1,0 +1,25 @@
+
+LANGUAGE KEY WORDS
+------------------
+and - logical conjunction
+at - for temporal qualifiers
+for - looping
+in - for contains
+is - for type matching
+mod - modulo operator
+not - logical negation
+o - "bullet" for bulleted list of value options
+or - logical disjunction
+otherwise - default value in a list of options
+step - delta in a range
+$value - the current context within a type constraint
+when - for pattern matching
+where - for a precomputed context shown after an expression
+within - for a precomputed context shown before an expression
+
+
+PREDEFINED STRING LITERAL FUNCTIONS
+-----------------------------------
+lligne-code(code: String)   // For code generation
+time(isoTime: String)       // For instants
+units(units: String)        // For units of measure

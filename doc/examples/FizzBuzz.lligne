@@ -1,0 +1,109 @@
+
+fb: Package = {
+
+    use map(Int64, String)
+
+    // Using modulo arithmetic on each value
+    fizzBuzz1 = fn(count: Int64) -> String =>
+        items.join('\n')
+        where {
+            items = map(
+                collection = 1..count,
+                mapping = fn(i:Int64) =>
+                    o "FizzBuzz" when isFizz and isBuzz
+                    o "Fizz" when isFizz and not isBuzz
+                    o "Buzz" when not isFizz and isBuzz
+                    o "{{i}}" otherwise
+                    where {
+                        isFizz = i mod 3 == 0
+                        isBuzz = i mod 5 == 0
+                    }
+            )
+        }
+
+    // Using step-counted replacement
+    fizzBuzz2 = fn(count: Int64) -> String =>
+        items.join('\n')
+        where {
+            items = map(collection = 1..count, mapping = "╢i╟")
+            items[i] = "Fizz" for i in (1..count step 3)
+            items[i] = "Buzz" for i in (1..count step 5)
+            items[i] = "FizzBuzz" for i in (1..count step 15)
+        }
+
+    // Using step-as-you-go logic
+    fizzBuzz3 = fn(count: Int64) -> String =>
+        items.join('\n')
+        where {
+            nextMultipleOf3 = 3,
+            nextMultipleOf5 = 5,
+            nextMultipleOf15 = 15,
+
+            items = map(
+                collection = 1..count,
+                mapping = fn(i:Int64) =>
+                    o "FizzBuzz" then {
+                          nextMultipleOf15 += 15,
+                          nextMultipleOf5 += 5,
+                          nextMultipleOf3 += 3
+                      } when i == nextMultipleOf15
+                    o "Fizz" then {
+                          nextMultipleOf3 += 3
+                      } when i == nextMultipleOf3
+                    o "Buzz" then {
+                          nextMultipleOf5 += 5
+                      } when i == nextMultipleOf5
+                    o "{{i}}" otherwise
+            )
+        }
+
+    // Using step-as-you-go logic #2, immutable values
+    fizzBuzz4 = fn(count: Int64) -> String =>
+        result.items.join('\n')
+        where {
+
+            Result: Type = {
+                nextMultipleOf3,
+                nextMultipleOf5,
+                nextMultipleOf15,
+                items: String[]
+            }
+
+            use reduce(Result, Int64)
+
+            start: Result = {
+                nextMultipleOf3 = 3,
+                nextMultipleOf5 = 5,
+                nextMultipleOf15 = 15,
+                items = []
+            }
+
+            result = reduce(
+                startingValue = start,
+                collection = 1..count,
+                accumulator = fn(prior: Result, i: Int64) =>
+                    o {
+                          items = prior.items.append("FizzBuzz"),
+                          nextMultipleOf15 = prior.nextMultipleOf15 + 15,
+                          nextMultipleOf5 = prior.nextMultipleOf5 + 5,
+                          nextMultipleOf3 = prior.nextMultipleOf3 + 3
+                      } when i == nextMultipleOf15
+                    o {
+                          ...prior,
+                          items = prior.items.append("Fizz"),
+                          nextMultipleOf3 = prior.nextMultipleOf3 + 3
+                      } when i == nextMultipleOf3
+                    o {
+                          ...prior,
+                          items = prior.items.append("Buzz"),
+                          nextMultipleOf5 = prior.nextMultipleOf5 + 5
+                      } when i == nextMultipleOf5
+                    o {
+                          ...prior,
+                          items = prior.items.append("{{i}}")
+                      } otherwise
+            )
+        }
+
+}
+

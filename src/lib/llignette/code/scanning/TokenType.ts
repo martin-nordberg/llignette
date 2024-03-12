@@ -9,82 +9,83 @@
 
 // TokenType is an enumeration of Llignette token types.
 export type TokenType =
-    | '#TokenTypeEof'
+    | '#TokenType_Eof'
 
     // Punctuation
-    | '#TokenTypeAmpersand'
-    | '#TokenTypeAmpersandAmpersand'
-    | '#TokenTypeAsterisk'
-    | '#TokenTypeAtSign'
-    | '#TokenTypeColon'
-    | '#TokenTypeColonColon'
-    | '#TokenTypeComma'
-    | '#TokenTypeDash'
-    | '#TokenTypeDot'
-    | '#TokenTypeDotDot'
-    | '#TokenTypeDotDotDot'
-    | '#TokenTypeEquals'
-    | '#TokenTypeEqualsEquals'
-    | '#TokenTypeEqualsEqualsEquals'
-    | '#TokenTypeEqualsTilde'
-    | '#TokenTypeExclamation'
-    | '#TokenTypeExclamationEquals'
-    | '#TokenTypeExclamationTilde'
-    | '#TokenTypeGreaterThan'
-    | '#TokenTypeGreaterThanOrEquals'
-    | '#TokenTypeHash'
-    | '#TokenTypeLeftBrace'
-    | '#TokenTypeLeftBracket'
-    | '#TokenTypeLeftParenthesis'
-    | '#TokenTypeLessThan'
-    | '#TokenTypeLessThanOrEquals'
-    | '#TokenTypePlus'
-    | '#TokenTypeQuestion'
-    | '#TokenTypeQuestionColon'
-    | '#TokenTypeQuestionQuestion'
-    | '#TokenTypeQuestionQuestionEquals'
-    | '#TokenTypeRightArrow'
-    | '#TokenTypeRightBrace'
-    | '#TokenTypeRightBracket'
-    | '#TokenTypeRightParenthesis'
-    | '#TokenTypeSemicolon'
-    | '#TokenTypeSlash'
-    | '#TokenTypeVerticalBar'
+    | '#TokenType_Ampersand'
+    | '#TokenType_AmpersandAmpersand'
+    | '#TokenType_Asterisk'
+    | '#TokenType_AtSign'
+    | '#TokenType_Colon'
+    | '#TokenType_ColonColon'
+    | '#TokenType_Comma'
+    | '#TokenType_Dash'
+    | '#TokenType_Dot'
+    | '#TokenType_DotDot'
+    | '#TokenType_DotDotDot'
+    | '#TokenType_Equals'
+    | '#TokenType_EqualsEquals'
+    | '#TokenType_EqualsEqualsEquals'
+    | '#TokenType_EqualsTilde'
+    | '#TokenType_Exclamation'
+    | '#TokenType_ExclamationEquals'
+    | '#TokenType_ExclamationTilde'
+    | '#TokenType_GreaterThan'
+    | '#TokenType_GreaterThanOrEquals'
+    | '#TokenType_Hash'
+    | '#TokenType_LeftBrace'
+    | '#TokenType_LeftBracket'
+    | '#TokenType_LeftParenthesis'
+    | '#TokenType_LessThan'
+    | '#TokenType_LessThanOrEquals'
+    | '#TokenType_Plus'
+    | '#TokenType_Question'
+    | '#TokenType_QuestionColon'
+    | '#TokenType_QuestionQuestion'
+    | '#TokenType_QuestionQuestionEquals'
+    | '#TokenType_RightArrow'
+    | '#TokenType_RightBrace'
+    | '#TokenType_RightBracket'
+    | '#TokenType_RightParenthesis'
+    | '#TokenType_Semicolon'
+    | '#TokenType_Slash'
+    | '#TokenType_VerticalBar'
 
     // Keywords
-    | '#TokenTypeAnd'
-    | '#TokenTypeAs'
-    | '#TokenTypeBoolean'
-    | '#TokenTypeFalse'
-    | '#TokenTypeFloat64'
-    | '#TokenTypeIn'
-    | '#TokenTypeInt64'
-    | '#TokenTypeIs'
-    | '#TokenTypeNot'
-    | '#TokenTypeOr'
-    | '#TokenTypeString'
-    | '#TokenTypeTrue'
-    | '#TokenTypeWhen'
-    | '#TokenTypeWhere'
+    | '#TokenType_And'
+    | '#TokenType_As'
+    | '#TokenType_Boolean'
+    | '#TokenType_False'
+    | '#TokenType_Float64'
+    | '#TokenType_In'
+    | '#TokenType_Int64'
+    | '#TokenType_Is'
+    | '#TokenType_Not'
+    | '#TokenType_Or'
+    | '#TokenType_String'
+    | '#TokenType_True'
+    | '#TokenType_When'
+    | '#TokenType_Where'
 
-    // Others
-    | '#TokenTypeBackTickedString'
-    | '#TokenTypeDocumentation'
-    | '#TokenTypeDoubleQuotedString'
-    | '#TokenTypeFloatingPointLiteral'
-    | '#TokenTypeIdentifier'
-    | '#TokenTypeIntegerLiteral'
-    | '#TokenTypeSingleQuotedString'
+    // String Literals
+    | '#TokenType_BackTickedString'
+    | '#TokenType_DoubleQuotedString'
+    | '#TokenType_ExclamationString'
+    | '#TokenType_SingleQuotedString'
+    | '#TokenType_TripleBackTickedString'
+    | '#TokenType_TripleDoubleQuotedString'
+    | '#TokenType_TripleSingleQuotedString'
+
+    // Other Literals
+    | '#TokenType_FloatingPointLiteral'
+    | '#TokenType_IntegerLiteral'
+
+    // Identifiers
+    | '#TokenType_Identifier'
 
     // Errors
-    | '#TokenTypeUnclosedDoubleQuotedString'
-    | '#TokenTypeUnclosedSingleQuotedString'
-    | '#TokenTypeUnrecognizedChar'
-
-    // Synthetic token types from postprocessing
-    | '#TokenTypeLeadingDocumentation'
-    | '#TokenTypeSynthDocument'
-    | '#TokenTypeTrailingDocumentation'
+    | '#TokenType_UnclosedString'
+    | '#TokenType_UnrecognizedChar'
 
     ;
 
@@ -95,147 +96,147 @@ export function textOfTokenType(tt: TokenType): string {
 
     switch (tt) {
 
-        case '#TokenTypeEof':
+        case '#TokenType_Eof':
             return "[end of file]"
 
         // Punctuation
-        case '#TokenTypeAmpersand':
+        case '#TokenType_Ampersand':
             return "&"
-        case '#TokenTypeAmpersandAmpersand':
+        case '#TokenType_AmpersandAmpersand':
             return "&&"
-        case '#TokenTypeAsterisk':
+        case '#TokenType_Asterisk':
             return "*"
-        case '#TokenTypeAtSign':
+        case '#TokenType_AtSign':
             return "@"
-        case '#TokenTypeColon':
+        case '#TokenType_Colon':
             return ":"
-        case '#TokenTypeColonColon':
+        case '#TokenType_ColonColon':
             return ":"
-        case '#TokenTypeComma':
+        case '#TokenType_Comma':
             return ","
-        case '#TokenTypeDash':
+        case '#TokenType_Dash':
             return "-"
-        case '#TokenTypeDot':
+        case '#TokenType_Dot':
             return "."
-        case '#TokenTypeDotDot':
+        case '#TokenType_DotDot':
             return ".."
-        case '#TokenTypeDotDotDot':
+        case '#TokenType_DotDotDot':
             return "..."
-        case '#TokenTypeEquals':
+        case '#TokenType_Equals':
             return "="
-        case '#TokenTypeEqualsEquals':
+        case '#TokenType_EqualsEquals':
             return "=="
-        case '#TokenTypeEqualsEqualsEquals':
+        case '#TokenType_EqualsEqualsEquals':
             return "==="
-        case '#TokenTypeEqualsTilde':
+        case '#TokenType_EqualsTilde':
             return "=~"
-        case '#TokenTypeExclamation':
+        case '#TokenType_Exclamation':
             return "!"
-        case '#TokenTypeExclamationEquals':
+        case '#TokenType_ExclamationEquals':
             return "!="
-        case '#TokenTypeExclamationTilde':
+        case '#TokenType_ExclamationTilde':
             return "!~"
-        case '#TokenTypeGreaterThan':
+        case '#TokenType_GreaterThan':
             return ">"
-        case '#TokenTypeGreaterThanOrEquals':
+        case '#TokenType_GreaterThanOrEquals':
             return ">="
-        case '#TokenTypeHash':
+        case '#TokenType_Hash':
             return "#"
-        case '#TokenTypeLeftBrace':
+        case '#TokenType_LeftBrace':
             return "{"
-        case '#TokenTypeLeftBracket':
+        case '#TokenType_LeftBracket':
             return "["
-        case '#TokenTypeLeftParenthesis':
+        case '#TokenType_LeftParenthesis':
             return "("
-        case '#TokenTypeLessThan':
+        case '#TokenType_LessThan':
             return "<"
-        case '#TokenTypeLessThanOrEquals':
+        case '#TokenType_LessThanOrEquals':
             return "<="
-        case '#TokenTypePlus':
+        case '#TokenType_Plus':
             return "+"
-        case '#TokenTypeQuestion':
+        case '#TokenType_Question':
             return "?"
-        case '#TokenTypeQuestionColon':
+        case '#TokenType_QuestionColon':
             return "?:"
-        case '#TokenTypeQuestionQuestion':
+        case '#TokenType_QuestionQuestion':
             return "??"
-        case '#TokenTypeQuestionQuestionEquals':
+        case '#TokenType_QuestionQuestionEquals':
             return "??="
-        case '#TokenTypeRightArrow':
+        case '#TokenType_RightArrow':
             return "->"
-        case '#TokenTypeRightBrace':
+        case '#TokenType_RightBrace':
             return "}"
-        case '#TokenTypeRightBracket':
+        case '#TokenType_RightBracket':
             return "]"
-        case '#TokenTypeRightParenthesis':
+        case '#TokenType_RightParenthesis':
             return ")"
-        case '#TokenTypeSemicolon':
+        case '#TokenType_Semicolon':
             return ";"
-        case '#TokenTypeSlash':
+        case '#TokenType_Slash':
             return "/"
-        case '#TokenTypeVerticalBar':
+        case '#TokenType_VerticalBar':
             return "|"
 
         // Keywords
-        case '#TokenTypeAnd':
+        case '#TokenType_And':
             return "and"
-        case '#TokenTypeAs':
+        case '#TokenType_As':
             return "as"
-        case '#TokenTypeBoolean':
+        case '#TokenType_Boolean':
             return "Boolean"
-        case '#TokenTypeFalse':
+        case '#TokenType_False':
             return "false"
-        case '#TokenTypeFloat64':
+        case '#TokenType_Float64':
             return "Float64"
-        case '#TokenTypeIn':
+        case '#TokenType_In':
             return "in"
-        case '#TokenTypeInt64':
+        case '#TokenType_Int64':
             return "Int64"
-        case '#TokenTypeIs':
+        case '#TokenType_Is':
             return "is"
-        case '#TokenTypeNot':
+        case '#TokenType_Not':
             return "not"
-        case '#TokenTypeOr':
+        case '#TokenType_Or':
             return "or"
-        case '#TokenTypeString':
+        case '#TokenType_String':
             return "String"
-        case '#TokenTypeTrue':
+        case '#TokenType_True':
             return "true"
-        case '#TokenTypeWhen':
+        case '#TokenType_When':
             return "when"
-        case '#TokenTypeWhere':
+        case '#TokenType_Where':
             return "where"
 
-        // Others
-        case '#TokenTypeBackTickedString':
+        // Literal Strings
+        case '#TokenType_BackTickedString':
             return "[back-ticked string]"
-        case '#TokenTypeDocumentation':
-            return "[documentation]"
-        case '#TokenTypeDoubleQuotedString':
-            return "[string literal]"
-        case '#TokenTypeFloatingPointLiteral':
-            return "[floating point literal]"
-        case '#TokenTypeIdentifier':
-            return "[identifier]"
-        case '#TokenTypeIntegerLiteral':
-            return "[integer literal]"
-        case '#TokenTypeSingleQuotedString':
-            return "[character literal]"
+        case '#TokenType_DoubleQuotedString':
+            return "[double quoted string]"
+        case '#TokenType_ExclamationString':
+            return "[double quoted string]"
+        case '#TokenType_SingleQuotedString':
+            return "[single quoted string]"
+        case '#TokenType_TripleBackTickedString':
+            return "[triple back-ticked string]"
+        case '#TokenType_TripleDoubleQuotedString':
+            return "[triple double quoted string]"
+        case '#TokenType_TripleSingleQuotedString':
+            return "[triple single quoted string]"
 
-        // Documentation
-        case '#TokenTypeLeadingDocumentation':
-            return "[leading documentation]"
-        case '#TokenTypeSynthDocument':
-            return "[synthetic documentation operator]"
-        case '#TokenTypeTrailingDocumentation':
-            return "[trailing documentation]"
+        // Other Literals
+        case '#TokenType_FloatingPointLiteral':
+            return "[floating point literal]"
+        case '#TokenType_IntegerLiteral':
+            return "[integer literal]"
+
+        // Identifiers
+        case '#TokenType_Identifier':
+            return "[identifier]"
 
         // Errors
-        case '#TokenTypeUnclosedSingleQuotedString':
-            return "[error - literal extends past end of line]"
-        case '#TokenTypeUnclosedDoubleQuotedString':
-            return "[error - string extends past end of line]"
-        case '#TokenTypeUnrecognizedChar':
+        case '#TokenType_UnclosedString':
+            return "[error - string literal extends past end of line]"
+        case '#TokenType_UnrecognizedChar':
             return "[error - unrecognized character]"
 
     }

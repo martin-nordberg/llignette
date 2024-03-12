@@ -4,8 +4,8 @@ import {textOfTokenType} from "../../../../src/lib/llignette/code/scanning/Token
 
 describe('TokenType test', () => {
     it('retrieves token text', () => {
-        expect(textOfTokenType('#TokenTypeAmpersand')).toBe("&");
-        expect(textOfTokenType('#TokenTypeIdentifier')).toBe("[identifier]");
-        expect(textOfTokenType('#TokenTypeIn')).toBe("in");
+        expect(textOfTokenType('#TokenType_Ampersand')).toBe("&");
+        expect(textOfTokenType('#TokenType_Identifier')).toBe("[identifier]");
+        expect(textOfTokenType('#TokenType_In')).toBe("in");
     });
 });

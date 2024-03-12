@@ -1,0 +1,28 @@
+
+s1 = "double quoted",
+
+s2 = 'single quoted',
+
+s3 = `back-ticked`,
+
+s4 = """
+  triple double-quoted
+  over multiple lines
+""",
+
+s4 = '''
+  triple single-quoted
+  over multiple lines
+''',
+
+s5 = ```
+  triple back-ticked
+  over multiple lines
+```,
+
+s6 =
+  ! Documentation strings
+  ! with only leading delimiters
+  ,
+
+

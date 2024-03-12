@@ -1,5 +1,7 @@
 //
-// (C) Copyright 2023 Martin E. Nordberg III
+// # Data structure for tracking slices of source code.
+//
+// (C) Copyright 2023-2024 Martin E. Nordberg III
 // Apache 2.0 License
 //
 

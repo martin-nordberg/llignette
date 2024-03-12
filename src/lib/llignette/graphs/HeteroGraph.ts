@@ -4,7 +4,7 @@
 //
 
 import {type Keyed} from "./Keyed";
-import {type Option} from "../util/Option";
+import {type Optional} from "../util/Optional";
 import {type HeteroEdge} from "./Edges";
 import {type Subscription} from "rxjs";
 
@@ -265,7 +265,7 @@ export interface HeteroGraph<TailVertex extends Keyed, HeadVertex extends Keyed,
      * Returns the head vertex with given key (or None).
      * @param key the unique key of a vertex to find
      */
-    headVertexWithKey(key: symbol): Option<HeadVertex>
+    headVertexWithKey(key: symbol): Optional<HeadVertex>
 
     /**
      * The number of edges coming in to the given head vertex.
@@ -293,7 +293,7 @@ export interface HeteroGraph<TailVertex extends Keyed, HeadVertex extends Keyed,
      * Returns the tail vertex with given key.
      * @param key the unique key of a vertex to find
      */
-    tailVertexWithKey(key: symbol): Option<TailVertex>
+    tailVertexWithKey(key: symbol): Optional<TailVertex>
 
 }
 

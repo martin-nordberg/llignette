@@ -10,10 +10,10 @@ import {
     some,
     toArray,
     value
-} from "../../../src/lib/llignette/util/Option";
+} from "../../../src/lib/llignette/util/Optional";
 
 
-describe('Option test', () => {
+describe('Optional test', () => {
     it('initializes None', () => {
         const nuttin = none();
 

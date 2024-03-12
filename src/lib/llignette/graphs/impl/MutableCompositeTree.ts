@@ -6,7 +6,7 @@
 import {type Keyed} from "../Keyed"
 import {type CompositeTree} from "../CompositeTree";
 import {MutableHeteroGraph1toN} from "./MutableHeteroGraph1toN";
-import {type Option} from "../../util/Option";
+import {type Optional} from "../../util/Optional";
 import {type HeteroEdge} from "../Edges";
 import {type HeadVertexTraversal, type HeteroEdgeTraversal, type TailVertexTraversal} from "../HeteroGraph";
 
@@ -80,7 +80,7 @@ export class MutableCompositeTree<ParentVertex extends ChildVertex, ChildVertex 
         return this.graph.hasTailVertex(vertex)
     }
 
-    headVertexWithKey(key: symbol): Option<ChildVertex> {
+    headVertexWithKey(key: symbol): Optional<ChildVertex> {
         return this.graph.headVertexWithKey(key)
     }
 
@@ -114,7 +114,7 @@ export class MutableCompositeTree<ParentVertex extends ChildVertex, ChildVertex 
         return this.graph.size
     }
 
-    tailVertexWithKey(key: symbol): Option<ParentVertex> {
+    tailVertexWithKey(key: symbol): Optional<ParentVertex> {
         return this.graph.tailVertexWithKey(key)
     }
 

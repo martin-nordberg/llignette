@@ -10,7 +10,7 @@ import type {Token} from "./Token";
 
 //=====================================================================================================================
 
-export type Outcome = {
+export type ScanningOutcome = {
     readonly sourceCode: string,
     readonly tokens: Token[],
     readonly newLineOffsets: number[]
@@ -19,7 +19,7 @@ export type Outcome = {
 //=====================================================================================================================
 
 // Converts the given source code to an array of tokens plus an array of new line character offsets.
-export function scan(sourceCode: string): Outcome {
+export function scan(sourceCode: string): ScanningOutcome {
 
     // Create a scanner.
     const scanner = new Scanner(sourceCode)
@@ -75,7 +75,7 @@ class Scanner {
             let token = this.#readToken()
             this.tokens.push(token)
 
-            if (token.tokenType == '#TokenTypeEof') {
+            if (token.tokenType == '#TokenType_Eof') {
                 // Two extra EOF tokens for no lookahead surprises.
                 this.tokens.push(token)
                 this.tokens.push(token)
@@ -139,66 +139,66 @@ class Scanner {
         // Handle individual characters.
         switch (ch) {
             case '&':
-                return this.#oneOrTwoCharToken('#TokenTypeAmpersand', '&', '#TokenTypeAmpersandAmpersand')
+                return this.#oneOrTwoCharToken('#TokenType_Ampersand', '&', '#TokenType_AmpersandAmpersand')
             case '*':
-                return this.#token('#TokenTypeAsterisk')
+                return this.#token('#TokenType_Asterisk')
             case '@':
-                return this.#token('#TokenTypeAtSign')
+                return this.#token('#TokenType_AtSign')
             case '`':
                 return this.#scanBackTickedString()
             case ':':
-                return this.#oneOrTwoCharToken('#TokenTypeColon', ':', '#TokenTypeColonColon')
+                return this.#oneOrTwoCharToken('#TokenType_Colon', ':', '#TokenType_ColonColon')
             case ',':
-                return this.#token('#TokenTypeComma')
+                return this.#token('#TokenType_Comma')
             case '-':
-                return this.#oneOrTwoCharToken('#TokenTypeDash', '>', '#TokenTypeRightArrow')
+                return this.#oneOrTwoCharToken('#TokenType_Dash', '>', '#TokenType_RightArrow')
             case '.':
-                return this.#oneToThreeCharToken('#TokenTypeDot', '.', '#TokenTypeDotDot', '.', '#TokenTypeDotDotDot')
+                return this.#oneToThreeCharToken('#TokenType_Dot', '.', '#TokenType_DotDot', '.', '#TokenType_DotDotDot')
             case '=':
                 return this.#scanAfterEquals()
             case '!':
                 return this.#scanAfterExclamationMark()
             case '<':
-                return this.#oneOrTwoCharToken('#TokenTypeLessThan', '=', '#TokenTypeLessThanOrEquals')
+                return this.#oneOrTwoCharToken('#TokenType_LessThan', '=', '#TokenType_LessThanOrEquals')
             case '>':
-                return this.#oneOrTwoCharToken('#TokenTypeGreaterThan', '=', '#TokenTypeGreaterThanOrEquals')
+                return this.#oneOrTwoCharToken('#TokenType_GreaterThan', '=', '#TokenType_GreaterThanOrEquals')
             case '#':
-                return this.#token('#TokenTypeHash')
+                return this.#token('#TokenType_Hash')
             case '{':
-                return this.#token('#TokenTypeLeftBrace')
+                return this.#token('#TokenType_LeftBrace')
             case '[':
-                return this.#token('#TokenTypeLeftBracket')
+                return this.#token('#TokenType_LeftBracket')
             case '(':
-                return this.#token('#TokenTypeLeftParenthesis')
+                return this.#token('#TokenType_LeftParenthesis')
             case '+':
-                return this.#token('#TokenTypePlus')
+                return this.#token('#TokenType_Plus')
             case '?':
                 return this.#scanAfterQuestionMark()
             case '}':
-                return this.#token('#TokenTypeRightBrace')
+                return this.#token('#TokenType_RightBrace')
             case ']':
-                return this.#token('#TokenTypeRightBracket')
+                return this.#token('#TokenType_RightBracket')
             case ')':
-                return this.#token('#TokenTypeRightParenthesis')
+                return this.#token('#TokenType_RightParenthesis')
             case ';':
-                return this.#token('#TokenTypeSemicolon')
+                return this.#token('#TokenType_Semicolon')
             case '/':
-                return this.#scanAfterSlash()
+                return this.#token('#TokenType_Slash')
             case '"':
                 return this.#scanDoubleQuotedString()
             case '\'':
                 return this.#scanSingleQuotedString()
             case '|':
-                return this.#token('#TokenTypeVerticalBar')
+                return this.#token('#TokenType_VerticalBar')
             case '\0':
                 return {
                     sourceOffset: this.markedPos,
                     sourceLength: 0,
-                    tokenType: '#TokenTypeEof'
+                    tokenType: '#TokenType_Eof'
                 }
         }
 
-        return this.#token('#TokenTypeUnrecognizedChar')
+        return this.#token('#TokenType_UnrecognizedChar')
 
     }
 
@@ -264,19 +264,19 @@ class Scanner {
             if (this.charAhead1 == '=') {
                 this.#advance()
 
-                return this.#token('#TokenTypeEqualsEqualsEquals')
+                return this.#token('#TokenType_EqualsEqualsEquals')
             }
 
-            return this.#token('#TokenTypeEqualsEquals')
+            return this.#token('#TokenType_EqualsEquals')
 
         }
 
         if (this.charAhead1 == '~') {
             this.#advance()
-            return this.#token('#TokenTypeEqualsTilde')
+            return this.#token('#TokenType_EqualsTilde')
         }
 
-        return this.#token('#TokenTypeEquals')
+        return this.#token('#TokenType_Equals')
 
     }
 
@@ -286,15 +286,15 @@ class Scanner {
         if (this.charAhead1 == '=') {
             this.#advance()
 
-            return this.#token('#TokenTypeExclamationEquals')
+            return this.#token('#TokenType_ExclamationEquals')
         }
 
         if (this.charAhead1 == '~') {
             this.#advance()
-            return this.#token('#TokenTypeExclamationTilde')
+            return this.#token('#TokenType_ExclamationTilde')
         }
 
-        return this.#token('#TokenTypeExclamation')
+        return this.#token('#TokenType_Exclamation')
 
     }
 
@@ -304,7 +304,7 @@ class Scanner {
         if (this.charAhead1 == ':') {
             this.#advance()
 
-            return this.#token('#TokenTypeQuestionColon')
+            return this.#token('#TokenType_QuestionColon')
         }
 
         if (this.charAhead1 == '?') {
@@ -313,31 +313,41 @@ class Scanner {
             // @ts-ignore
             if (this.charAhead1 == '=') {
                 this.#advance()
-                return this.#token('#TokenTypeQuestionQuestionEquals')
+                return this.#token('#TokenType_QuestionQuestionEquals')
             }
 
-            return this.#token('#TokenTypeQuestionQuestion')
+            return this.#token('#TokenType_QuestionQuestion')
         }
 
-        return this.#token('#TokenTypeQuestion')
-    }
-
-    // Scans either just the slash or else a comment extending to the end of the line.
-    #scanAfterSlash(): Token {
-
-        if (this.charAhead1 == '/') {
-            this.#advance()
-
-            return this.#scanDocumentation()
-        }
-
-        return this.#token('#TokenTypeSlash')
-
+        return this.#token('#TokenType_Question')
     }
 
     // Consumes a multiline back-ticked string.
     #scanBackTickedString(): Token {
 
+        if (this.charAhead1 == '`' && this.charAhead2 == '`') {
+            this.#advance()
+            this.#advance()
+            return this.#scanTripleQuotedString('`', '#TokenType_TripleBackTickedString')
+        }
+
+        return this.#scanQuotedString('`', '#TokenType_BackTickedString')
+    }
+
+    // Scans the remainder of a string literal after the initial double quote character has been consumed.
+    #scanDoubleQuotedString(): Token {
+
+        if (this.charAhead1 == '"' && this.charAhead2 == '"') {
+            this.#advance()
+            this.#advance()
+            return this.#scanTripleQuotedString('"', '#TokenType_TripleDoubleQuotedString')
+        }
+
+        return this.#scanQuotedString('"', '#TokenType_DoubleQuotedString')
+
+    }
+
+    #scanExclamationString() {
         const mark = this.markedPos
 
         while (true) {
@@ -361,9 +371,9 @@ class Scanner {
                 this.#advance()
             }
 
-            // Quit after seeing something other than another back-ticked string on the subsequent line.
+            // Quit after seeing something other than another exclamation mark on the subsequent line.
             // @ts-ignore
-            if (this.charAhead1 != "`") {
+            if (this.charAhead1 != "!") {
                 break
             }
 
@@ -376,77 +386,7 @@ class Scanner {
         return {
             sourceOffset: mark,
             sourceLength: this.currentPos - mark,
-            tokenType: '#TokenTypeBackTickedString',
-        }
-
-    }
-
-    // Consumes a multiline comment.
-    #scanDocumentation(): Token {
-
-        const mark = this.markedPos
-
-        while (true) {
-
-            // Consume to the end of the line.
-            while (this.charAhead1 != '\n' && this.charAhead1 != '\0') {
-                this.#advance()
-            }
-
-            // Quit if hit the end of input.
-            if (this.charAhead1 == '\0') {
-                break
-            }
-
-            this.#advance()
-
-            // Ignore whitespace
-            while (this.charAhead1 != '\n' && this.#isWhiteSpace(this.charAhead1)) {
-                this.#advance()
-            }
-
-            // Quit after seeing something other than another back-ticked string on the subsequent line.
-            // @ts-ignore
-            if (this.charAhead1 != '/' || this.sourceCode[this.currentPos + 1] != '/') {
-                break
-            }
-
-            // Mark the start of the next line and consume the "//"
-            this.markedPos = this.currentPos
-            this.#advance()
-            this.#advance()
-
-        }
-
-        return {
-            sourceOffset: mark,
-            sourceLength: this.currentPos - mark,
-            tokenType: '#TokenTypeDocumentation'
-        }
-
-    }
-
-    // Scans the remainder of a string literal after the initial double quote character has been consumed.
-    #scanDoubleQuotedString(): Token {
-
-        while (true) {
-            switch (this.charAhead1) {
-                case '"':
-                    this.#advance()
-                    return this.#token('#TokenTypeDoubleQuotedString')
-
-                case '\\':
-                    this.#advance()
-                    // TODO: handle escape sequences properly
-                    this.#advance()
-                    break;
-
-                case '\n':
-                    return this.#token('#TokenTypeUnclosedDoubleQuotedString')
-
-                default:
-                    this.#advance()
-            }
+            tokenType: '#TokenType_ExclamationString'
         }
 
     }
@@ -472,7 +412,7 @@ class Scanner {
         return {
             sourceOffset: this.markedPos,
             sourceLength: this.currentPos - this.markedPos,
-            tokenType: '#TokenTypeIdentifier',
+            tokenType: '#TokenType_Identifier',
         }
 
     }
@@ -489,7 +429,7 @@ class Scanner {
             return this.#scanNumberFloatingPoint()
         }
 
-        return this.#token('#TokenTypeIntegerLiteral')
+        return this.#token('#TokenType_IntegerLiteral')
 
     }
 
@@ -502,25 +442,71 @@ class Scanner {
 
         // TODO: exponents
 
-        return this.#token('#TokenTypeFloatingPointLiteral')
+        return this.#token('#TokenType_FloatingPointLiteral')
+
+    }
+
+    // Scans a single line string up to given delimiter, returning given token type.
+    #scanQuotedString(delimiter: string, tokenType: TokenType): Token {
+
+        while (true) {
+            switch (this.charAhead1) {
+                case delimiter:
+                    this.#advance()
+                    return this.#token(tokenType)
+
+                case '\\':
+                    this.#advance()
+                    // TODO: handle escape sequences properly
+                    this.#advance()
+                    break;
+
+                case '\n':
+                case '\0':
+                    return this.#token('#TokenType_UnclosedString')
+
+                default:
+                    this.#advance()
+            }
+        }
 
     }
 
     // Scans the remainder of a string literal after the initial single quote character has been consumed.
     #scanSingleQuotedString(): Token {
 
+        if (this.charAhead1 == "'" && this.charAhead2 == "'") {
+            this.#advance()
+            this.#advance()
+            return this.#scanTripleQuotedString("'", '#TokenType_TripleSingleQuotedString')
+        }
+
+        return this.#scanQuotedString("'", '#TokenType_SingleQuotedString')
+
+    }
+
+    // Scans a multi line string up to given delimiter, returning given token type.
+    #scanTripleQuotedString(delimiter: string, tokenType: TokenType): Token {
+
         while (true) {
             switch (this.charAhead1) {
-                case        '\''    :
+                case delimiter:
                     this.#advance()
-                    return this.#token('#TokenTypeSingleQuotedString')
-                case        '\\'    :
-                    this.#advance()
-                    // TODO: handle escape sequences properly
-                    this.#advance()
-                    break
-                case        '\n'    :
-                    return this.#token('#TokenTypeUnclosedSingleQuotedString')
+
+                    if (this.charAhead1 == delimiter) {
+                        this.#advance()
+
+                        if (this.charAhead1 == delimiter) {
+                            this.#advance()
+                            return this.#token(tokenType)
+                        }
+                    }
+
+                    break;
+
+                case '\0':
+                    return this.#token('#TokenType_UnclosedString')
+
                 default:
                     this.#advance()
             }
@@ -542,20 +528,20 @@ class Scanner {
 //=====================================================================================================================
 
 const keywords: { [key: string]: TokenType } = {
-    "and": '#TokenTypeAnd',
-    "as": '#TokenTypeAs',
-    "Boolean": '#TokenTypeBoolean',
-    "false": '#TokenTypeFalse',
-    "Float64": '#TokenTypeFloat64',
-    "is": '#TokenTypeIs',
-    "in": '#TokenTypeIn',
-    "Int64": '#TokenTypeInt64',
-    "not": '#TokenTypeNot',
-    "or": '#TokenTypeOr',
-    "String": '#TokenTypeString',
-    "true": '#TokenTypeTrue',
-    "when": '#TokenTypeWhen',
-    "where": '#TokenTypeWhere',
+    "and": '#TokenType_And',
+    "as": '#TokenType_As',
+    "Boolean": '#TokenType_Boolean',
+    "false": '#TokenType_False',
+    "Float64": '#TokenType_Float64',
+    "is": '#TokenType_Is',
+    "in": '#TokenType_In',
+    "Int64": '#TokenType_Int64',
+    "not": '#TokenType_Not',
+    "or": '#TokenType_Or',
+    "String": '#TokenType_String',
+    "true": '#TokenType_True',
+    "when": '#TokenType_When',
+    "where": '#TokenType_Where',
 }
 
 //=====================================================================================================================

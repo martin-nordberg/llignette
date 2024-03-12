@@ -1,0 +1,286 @@
+
+mymodule = mod {
+
+    mymath = pkg {
+        f = fun(x:Float64, y: Float64) {
+            z = x*x - y*y
+        }
+
+        Vector = typ {
+            x: Float64,
+            y: Float64,
+            z: Float64
+        }
+
+        origin: Vector = rec {
+            x = 0.0,
+            y = 0.0,
+            z = 0.0
+        }
+
+        pi = 3.14159
+    }
+
+    mystrings = pkg {
+        greeting = "Hello"
+    }
+
+}
+
+mod mymodule = {
+
+    pkg mymath = {
+        fun f(x:Float64, y: Float64) =
+            x*x - y*y
+
+        typ Vector = {
+            const x: Float64,
+            const y: Float64,
+            const z: Float64
+        }
+
+        val origin: Vector = {
+            val x = 0.0,
+            val y = 0.0,
+            val z = 0.0
+        }
+
+        val pi = 3.14159
+    }
+
+    pkg mystrings = {
+        val greeting = "Hello"
+    }
+
+}
+
+
+pkg lligne.util.options = {
+
+    typ None = {
+        val tag = 'Option#None'
+    }
+
+    typ Some(T: Type) = {
+        val tag = 'Option#Some',
+        val value: T
+    }
+
+    typ Option(T:Type) =
+        None
+        | Some(T)
+
+    val none: None =
+        {tag = 'Option#None'}
+
+    fun areEqual(T: Type)(option1: Option(T), option2: Option(T)): Bool =
+        option1.tag == option2.tag and
+        (option1.tag == 'Option#None' or option1.value == option2.value)
+
+    fun exists(T: Type)(option: Option(T), predicate: (value: T) -> boolean): Bool =
+        true when option.tag == 'Option#Some' and predicate(option.value)
+        | false
+
+    fun filter(T: Type)(option: Option(T), predicate: (value: T) -> boolean): Option(T) =
+        option when option.tag == 'Option#Some' and predicate(option.value)
+        | none
+
+    fun isNone(T: Type)(option: Option(T)): Bool =
+        option.tag == 'Option#None'
+
+    fun isSome(T: Type)(option: Option(T)): Bool =
+        option.tag == 'Option#Some'
+
+    fun map(T: Type, U: Type)(option: Option(T), mapFn: (value: T) -> U): Option(U) =
+        none() when option.tag == 'Option#None'
+        | some(mapFn(option.value))
+
+    fun match(T: Type, U: Type)(option: Option(T), dispatch: { ifNone: () -> U, ifSome: (value: T) -> U }): U =
+        dispatch.ifNone() when option.tag == 'Option#None'
+        | dispatch.ifSome(option.value)
+
+    fun some(T: Type)(value: T): Some(T) =
+        {tag = 'Option#Some', value = value}
+
+    fun toArray(T: Type)(option: Option(T)): T[] =
+        [] when option.tag == 'Option#None'
+        | [option.value]
+
+    // TBD: toResult (value or error)
+
+    fun value(T: Type)(option: Option(T), default: T): T =
+        default when option.tag == 'Option#None'
+        | option.value
+
+}
+
+
+pkg lligne {
+pkg util{
+pkg options(T: Type) = {
+
+    typ None = {
+        val tag = 'Option#None'
+    }
+
+    typ Some = {
+        val tag = 'Option#Some',
+        val value: T
+    }
+
+    typ Option =
+        None
+        | Some
+
+    val none: None =
+        {tag = 'Option#None'}
+
+    fun areEqual(option1: Option, option2: Option): Bool =
+        option1.tag == option2.tag and
+        (option1.tag == 'Option#None' or option1.value == option2.value)
+
+    fun exists(option: Option, predicate: (value: T) -> boolean): Bool =
+        true when option.tag == 'Option#Some' and predicate(option.value)
+        | false
+
+    fun filter(option: Option, predicate: (value: T) -> boolean): Option =
+        option when option.tag == 'Option#Some' and predicate(option.value)
+        | none
+
+    fun isNone(option: Option): Bool =
+        option.tag == 'Option#None'
+
+    fun isSome(option: Option): Bool =
+        option.tag == 'Option#Some'
+
+    fun map(U: Type, option: Option, mapFn: (value: T) -> U): Option(U) =
+        none() when option.tag == 'Option#None'
+        | some(mapFn(option.value))
+
+    fun match(U: Type, option: Option, dispatch: { ifNone: () -> U, ifSome: (value: T) -> U }): U =
+        dispatch.ifNone() when option.tag == 'Option#None'
+        | dispatch.ifSome(option.value)
+
+    fun some(value: T): Some(T) =
+        {tag = 'Option#Some', value = value}
+
+    fun toArray(option: Option): T[] =
+        [] when option.tag == 'Option#None'
+        | [option.value]
+
+    // TBD: toResult (value or error)
+
+    fun value(option: Option, default: T): T =
+        default when option.tag == 'Option#None'
+        | option.value
+
+}
+}
+}
+
+type OptInt32 = options(Int32).Option
+
+fun doStuff(x: OptInt32): Int32 =
+    x.value when x.tag == 'Option#Some'
+    | 0
+
+fun m(x: options(Int64).Option): Float64 =
+    map(Float64, x, (xx) -> Float64.of(xx))
+
+
+
+
+
+
+genr lligne.util.options(T:Type) =>
+
+    pkg ⟪T.package⟫ &= {
+
+        type ⟪none⟫ = {
+            val tag = ⟪noneTag⟫
+        }
+
+        type ⟪some⟫ = {
+            val tag = ⟪someTag⟫,
+            val value: T
+        }
+
+        type ⟪optional⟫ =
+            ⟪none⟫
+            | ⟪some⟫
+
+        val none: ⟪none⟫ =
+            {tag = ⟪noneTag⟫}
+
+        func areEqual(option1: ⟪optional⟫, option2: ⟪optional⟫): Bool =
+            option1 is ⟪none⟫ and option2 is ⟪none⟫ or
+            option1 is ⟪some⟫ and option2 is ⟪some⟫ and option1.value == option2.value
+
+        func exists(option: ⟪optional⟫, predicate: (value: T) -> boolean): Bool =
+            true when option is ⟪some⟫ and predicate(option.value)
+            | false
+
+        func filter(option: ⟪optional⟫, predicate: (value: T) -> boolean): ⟪optional⟫ =
+            option when option is ⟪some⟫ and predicate(option.value)
+            | none
+
+        func isNone(option: ⟪optional⟫): Bool =
+            option is ⟪none⟫
+
+        func isSome(option: ⟪optional⟫): Bool =
+            option is ⟪some⟫
+
+        func some(value: T): ⟪some⟫(T) =
+            {tag = ⟪someTag⟫, value}
+
+        func toArray(option: ⟪optional⟫): T[] =
+            [option.value] when option is ⟪some⟫
+            | []
+
+        func value(option: ⟪optional⟫, default: T): T =
+            option.value when option is ⟪some⟫
+            default
+
+        // TBD: toResult (value or error)
+
+    }
+    where {
+        val optional = "Optional⟪T.name⟫"
+        val none = "None⟪T.name⟫"
+        val noneTag = "'⟪optional⟫#None'"
+        val some = "Some⟪T.name⟫"
+        val someTag = "'⟪optional⟫#Some'"
+    }
+
+    fun map(U: Type, option: Option, mapFn: (value: T) -> U): Option(U) =
+        none() when option.tag == 'Option#None'
+        | some(mapFn(option.value))
+
+    fun match(U: Type, option: Option, dispatch: { ifNone: () -> U, ifSome: (value: T) -> U }): U =
+        dispatch.ifNone() when option.tag == 'Option#None'
+        | dispatch.ifSome(option.value)
+
+
+// Usage
+
+fun doStuff(x: OptionalInt32): Int32 =
+    x.value when x is SomeInt32
+    | 0
+
+fun m(x: OptionalInt64): Float64 =
+    map(Float64, x, (xx) -> Float64.of(xx))
+
+
+
+ligne = French for "line"
+boks = Danish for "box"
+
+igne = "fire"
+
+LL = Logic Language
+GNE = Graph == Nodes and Edges
+IG = Interpolative Generator
+BO = Basic Objects
+KS = Knowledge System
+
+ligne = Archaic unit of measure (tiny lengths)

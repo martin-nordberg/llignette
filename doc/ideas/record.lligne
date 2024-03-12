@@ -1,0 +1,64 @@
+
+{
+    name: String & .size() > 0 & .size() <= 30 & .matches(/[A-Za-z]+/),
+    salary: Float64 & >=0.0 & <1_000_000.0,
+    commission: Float64 & >=0.0 & <=20.0 defaults-to 0.0
+} & .salary <= 100_000 or .commission <= 5.0
+
+
+
+
+{
+    name: String & size($value) > 0 & size($value) <= 30 & $value =~ /[A-Za-z]+/,
+    salary: Float64 & $value >= 0.0 & $value < 1_000_000.0,
+    commission: Float64 & $value >= 0.0 & $value <= 20.0 defaults-to 0.0
+} & $value.salary <= 100_000 or $value.commission <= 5.0
+
+{
+    name: String & size(value) > 0 & size(value) <= 30 & value =~ /[A-Za-z]+/,
+    salary: Float64 & value >= 0.0 & value < 1_000_000.0,
+    commission: Float64 & value >= 0.0 & value <= 20.0 ?: 0.0
+} & value.salary <= 100_000 or value.commission <= 5.0
+
+{
+    name: String & size(_) > 0 & size(_) <= 30 & _ =~ /[A-Za-z]+/,
+    salary: Float64 & _ > 0.0 & _ < 1_000_000.0,
+    commission: Float64 & _ > 0.0 & _ < 20.0
+} & _.salary < 100_000 or _.commission < 5.0
+
+{
+    name: String & size(__) > 0 & size(__) <= 30 & __ =~ /[A-Za-z]+/,
+    salary: Float64 & __ > 0.0 & __ < 1_000_000.0,
+    commission: Float64 & __ > 0.0 & __ < 20.0
+} & __.salary < 100_000 or __.commission < 5.0
+
+{
+    name: String & size($) > 0 & size($) <= 30 & $ =~ /[A-Za-z]+/,
+    salary: Float64 & $ > 0.0 & $ < 1_000_000.0,
+    commission: Float64 & $ > 0.0 & $ < 20.0
+} & $.salary < 100_000 or $.commission < 5.0
+
+{
+    name: String & size(val) > 0 & size(val) <= 30 & val =~ /[A-Za-z]+/,
+    salary: Float64 & val > 0.0 & val < 1_000_000.0,
+    commission: Float64 & val > 0.0 & val < 20.0
+} & val.salary < 100_000 or val.commission < 5.0
+
+{
+    name: String & size(this) > 0 & size(this) <= 30 & this =~ /[A-Za-z]+/,
+    salary: Float64 & this > 0.0 & this < 1_000_000.0,
+    commission: Float64 & this > 0.0 & this < 20.0
+} & this.salary < 100_000 or this.commission < 5.0
+
+{
+    name: String & size(self) > 0 & size(self) <= 30 & self =~ /[A-Za-z]+/,
+    salary: Float64 & self > 0.0 & self < 1_000_000.0,
+    commission: Float64 & self > 0.0 & self < 20.0
+} & self.salary < 100_000 or self.commission < 5.0
+
+{
+    name: String & size(it) > 0 & size(it) <= 30 & it =~ /[A-Za-z]+/,
+    salary: Float64 & it > 0.0 & it < 1_000_000.0,
+    commission: Float64 & it > 0.0 & it < 20.0
+} & it.salary < 100_000 or it.commission < 5.0
+

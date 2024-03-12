@@ -16,12 +16,12 @@ export type Some<T> = {
 
 //=====================================================================================================================
 
-export type Option<T> =
+export type Optional<T> =
     | None
     | Some<T>
     ;
 
-export function areEqual<T>(option1: Option<T>, option2: Option<T>): boolean {
+export function areEqual<T>(option1: Optional<T>, option2: Optional<T>): boolean {
     switch (option1.tag) {
         case 'Option#None':
             return option2.tag == 'Option#None';
@@ -32,7 +32,7 @@ export function areEqual<T>(option1: Option<T>, option2: Option<T>): boolean {
 
 // TBD: compare (compares values, with None < Some(v))
 
-export function filter<T>(option: Option<T>, predicate: (value: T) => boolean): Option<T> {
+export function filter<T>(option: Optional<T>, predicate: (value: T) => boolean): Optional<T> {
     if (option.tag == 'Option#Some' && predicate(option.value)) {
         return option
     } else {
@@ -40,7 +40,7 @@ export function filter<T>(option: Option<T>, predicate: (value: T) => boolean): 
     }
 }
 
-export function isNone<T>(option: Option<T>): boolean {
+export function isNone<T>(option: Optional<T>): boolean {
     switch (option.tag) {
         case 'Option#None':
             return true
@@ -49,7 +49,7 @@ export function isNone<T>(option: Option<T>): boolean {
     }
 }
 
-export function isSome<T>(option: Option<T>): boolean {
+export function isSome<T>(option: Optional<T>): boolean {
     switch (option.tag) {
         case 'Option#None':
             return false
@@ -58,7 +58,7 @@ export function isSome<T>(option: Option<T>): boolean {
     }
 }
 
-export function map<T, U>(option: Option<T>, mapFn: (value: T) => U): Option<U> {
+export function map<T, U>(option: Optional<T>, mapFn: (value: T) => U): Optional<U> {
     switch (option.tag) {
         case 'Option#None':
             return none()
@@ -67,7 +67,7 @@ export function map<T, U>(option: Option<T>, mapFn: (value: T) => U): Option<U> 
     }
 }
 
-export function match<T, U>(option: Option<T>, dispatch: { ifNone: () => U, ifSome: (value: T) => U }): U {
+export function match<T, U>(option: Optional<T>, dispatch: { ifNone: () => U, ifSome: (value: T) => U }): U {
     switch (option.tag) {
         case 'Option#None':
             return dispatch.ifNone()
@@ -84,14 +84,14 @@ export function some<T>(value: T): Some<T> {
     return {tag: 'Option#Some', value}
 }
 
-export function someOrNone<T>(value: T|undefined): Option<T> {
+export function someOrNone<T>(value: T|undefined): Optional<T> {
     if (value) {
         return some(value)
     }
     return none()
 }
 
-export function toArray<T>(option: Option<T>): T[] {
+export function toArray<T>(option: Optional<T>): T[] {
     switch (option.tag) {
         case 'Option#None':
             return []
@@ -102,7 +102,7 @@ export function toArray<T>(option: Option<T>): T[] {
 
 // TBD: toResult (value or error)
 
-export function value<T>(option: Option<T>, defawlt: T): T {
+export function value<T>(option: Optional<T>, defawlt: T): T {
     switch (option.tag) {
         case 'Option#None':
             return defawlt

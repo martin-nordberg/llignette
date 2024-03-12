@@ -1,0 +1,20 @@
+
+Open: Type = {
+    x: Float64,
+    y: Float64,
+    z: Float64
+}
+
+
+Closed: Type = {
+    x: Float64,
+    y: Float64,
+    z: Float64
+} & sealed
+
+Closed: Type = @Sealed {
+    x: Float64,
+    y: Float64,
+    z: Float64
+}
+

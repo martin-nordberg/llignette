@@ -1,0 +1,19 @@
+
+// where and within
+
+func pythWhere(a: Float64, b: Float64) =
+    sqrt(a2 + b2)
+    where {
+        a2 = a * a,
+        b2 = b * b
+    }
+
+
+func pythWithin(a: Float64, b: Float64) = {
+        a2 = a * a,
+        b2 = b * b
+    } within
+    sqrt(a2 + b2)
+
+
+

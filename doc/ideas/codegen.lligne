@@ -1,0 +1,93 @@
+
+generator lligne.util.options(T:Type) = lligne-code(```
+
+    «T.package»: Package &= (
+
+        «None»: Type = (
+            «noneTag»
+        )
+
+        «Some»: Type = (
+            «someTag»,
+            value: «Value»
+        )
+
+        «Optional»: Type =
+            «None»
+            | «Some»
+
+        none: «None» =
+            ( «noneTag» )
+
+        eq: (option1: «Optional», option2: «Optional») -> Bool =
+            fn(option1, option2) ->
+                option1 is «None» and option2 is «None» or
+                option1 is «Some» and option2 is «Some» and option1.value == option2.value
+
+        exists: (option: «Optional», predicate: (value: «Value») -> boolean) -> Bool =
+            fn(option, predicate) ->
+                option is «Some» and predicate(option.value)
+
+        filter: (option: «Optional», predicate: (value: «Value») -> boolean) -> «Optional» =
+            fn(option, predicate) ->
+                o option when option is «Some» and predicate(option.value)
+                o none otherwise
+
+        isNone: (option: «Optional») -> Bool =
+            fn(option) ->
+                option is «None»
+
+        isSome: (option: «Optional») -> Bool =
+            fn(option) ->
+                option is «Some»
+
+        some: (value: «Value») -> «Some» =
+            fn(value) ->
+                { «someTag», value }
+
+        toArray: (option: «Optional») -> «Value»[] =
+            fn(option) ->
+                o [option.value] when option is «some»
+                o [] otherwise
+
+        value: (option: «Optional», default: «Value») -> «Value» =
+            fn(option) ->
+                o option.value when option is «Some»
+                o default otherwise
+
+        // TBD: toResult (value or error)
+
+    )
+    where (
+        Value = T.name
+        Optional = "Optional╢Value╟"
+        None = "None╢Value╟"
+        noneTag = "#╢Optional╟None"
+        Some = "Some╢Value╟"
+        someTag = "#╢Optional╟Some'"
+    )
+
+```)
+
+
+// TODO: second type parameter
+
+fun map(U: Type, option: Option, mapFn: (value: T) -> U): Option(U) =
+    none() when option.tag == 'Option#None'
+    | some(mapFn(option.value))
+
+fun match(U: Type, option: Option, dispatch: { ifNone: () -> U, ifSome: (value: T) -> U }): U =
+    dispatch.ifNone() when option.tag == 'Option#None'
+    | dispatch.ifSome(option.value)
+
+
+// Usage
+
+doStuff = fn(x: OptionalInt32) ->
+    x.value when x is SomeInt32
+    | 0
+
+m = (x: OptionalInt64) -> Float64 =
+    fn(x) -> map(Float64, x, (xx) -> Float64.of(xx))
+
+
