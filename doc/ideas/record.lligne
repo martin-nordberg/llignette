@@ -1,9 +1,9 @@
 
-{
-    name: String & .size() > 0 & .size() <= 30 & .matches(/[A-Za-z]+/),
+｟
+    name: String & .size() > 0 & .size() <=30 & .matches(regex(`[A-Za-z]+`)),
     salary: Float64 & >=0.0 & <1_000_000.0,
-    commission: Float64 & >=0.0 & <=20.0 defaults-to 0.0
-} & .salary <= 100_000 or .commission <= 5.0
+    commission: Float64 & >=0.0 & <=20.0 ??= 0.0
+｠ & .salary <= 100_000 or .commission <= 5.0
 
 
 

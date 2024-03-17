@@ -28,39 +28,39 @@ lligne.util: Package :: djot(
         )
 
     eq: (T: Type, option1: Optional(T), option2: Optional(T)) -> Bool
-    eq ??= fn(T: Type, option1: Optional(T), option2: Optional(T)) ->
+    eq ??= fn(T: Type, option1: Optional(T), option2: Optional(T)) =>
             option1 is None(T) and option2 is None(T) or
             option1 is Some(T) and option2 is Some(T) and option1.value == option2.value
 
     exists: (T: Type, option: Optional(T), predicate: (value: T) -> boolean) -> Bool ??=
-        fn(T, option, predicate) ->
+        fn(T, option, predicate) =>
             option is Some(T) and predicate(option.value)
 
     filter: (T: Type, option: Optional(T), predicate: (value: T) -> boolean) -> Optional(T) ??=
-        fn(T, option, predicate) ->
+        fn(T, option, predicate) =>
             ◆ option when option is Some(T) and predicate(option.value)
             ◆ none otherwise
 
     isNone: (T: Type, option: Optional(T)) -> Bool ??=
-        fn(T, option) ->
+        fn(T, option) =>
             option is None(T)
 
     isSome: (T: Type, option: Optional(T)) -> Bool ??=
-        fn(T, option) ->
+        fn(T, option) =>
             option is Some(T)
 
     map: (T: Type, U: Type, option: Option(T), mapFn: (value: T) -> U): Option(U) ??=
-        fn(T, U, option, mapFn) ->
+        fn(T, U, option, mapFn) =>
             ◆ none(U) when option is None(T)
             ◆ some(mapFn(option.value)) otherwise
 
     match: (T: Type, U: Type, option: Option(T), dispatch: (ifNone: () -> U, ifSome: (value: T) -> U)): U ??=
-        fn(T, U, option, dispatch) ->
+        fn(T, U, option, dispatch) =>
             ◆ dispatch.ifNone() when option is None(T)
             ◆ dispatch.ifSome(option.value) otherwise
 
     some: (T: Type, value: T) -> «Some» ??=
-        fn(T, value) -> (
+        fn(T, value) => (
             «someTag»,
             value
         )

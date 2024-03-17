@@ -136,12 +136,12 @@ class Scanner {
             return this.#scanNumber()
         }
 
-        // Handle individual characters.
+        // Handle individual punctuation characters.
         switch (ch) {
             case '&':
                 return this.#oneOrTwoCharToken('#TokenType_Ampersand', '&', '#TokenType_AmpersandAmpersand')
             case '*':
-                return this.#token('#TokenType_Asterisk')
+                return this.#oneOrTwoCharToken('#TokenType_Asterisk', '*', '#TokenType_AsteriskAsterisk')
             case '@':
                 return this.#token('#TokenType_AtSign')
             case '`':
@@ -190,6 +190,8 @@ class Scanner {
                 return this.#scanSingleQuotedString()
             case '|':
                 return this.#token('#TokenType_VerticalBar')
+            case '◆':
+                return this.#token('#TokenType_O')
             case '\0':
                 return {
                     sourceOffset: this.markedPos,
@@ -269,6 +271,11 @@ class Scanner {
 
             return this.#token('#TokenType_EqualsEquals')
 
+        }
+
+        if (this.charAhead1 == '>') {
+            this.#advance()
+            return this.#token('#TokenType_RightDoubleArrow')
         }
 
         if (this.charAhead1 == '~') {
@@ -532,16 +539,20 @@ const keywords: { [key: string]: TokenType } = {
     "as": '#TokenType_As',
     "Boolean": '#TokenType_Boolean',
     "false": '#TokenType_False',
+    "fn": '#TokenType_Fn',
     "Float64": '#TokenType_Float64',
     "is": '#TokenType_Is',
     "in": '#TokenType_In',
     "Int64": '#TokenType_Int64',
     "not": '#TokenType_Not',
+    "o": '#TokenType_O',
     "or": '#TokenType_Or',
+    "otherwise": '#TokenType_Otherwise',
     "String": '#TokenType_String',
     "true": '#TokenType_True',
     "when": '#TokenType_When',
     "where": '#TokenType_Where',
+    "xor": '#TokenType_Xor',
 }
 
 //=====================================================================================================================

@@ -1,16 +1,4 @@
 
-Suggested text Hi Matthew,Conversation opened. 1 unread message.
-
-Skip to content
-Using Gmail with screen readers
-1 of 1,163
-Braces
-Inbox
-
-Nordberg, Martin E
-7:17 PM (1 minute ago)
-to me
-
 https://www.vertex42.com/ExcelTips/unicode-symbols.html#block
 
 
@@ -51,6 +39,12 @@ aaaaaaaaaaaaaaa⁅aa⁆;T⦕aa⦖
 
 ⌦aa⌫
 
+(aa + aa)
+【aa, bb
+
+// Record parenthesis
+｟aa, bb｠
+(aa + aa)
                             |
 "Name: ┣ employee.name ┫"   |
 "Name: ╟ employee.name ╢"   |
