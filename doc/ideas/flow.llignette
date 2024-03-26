@@ -1,0 +1,22 @@
+
+// Examples
+
+once >> runBatch >> fileOut("report.txt")
+
+stdin >> lines >> greeting >> stdout
+
+httpRequests >> router >> httpResponses
+
+mouseMoves(component) >> handler
+
+
+// Fork & join
+
+stuff >>[ process ]>> combine
+
+
+// Split
+
+httpRequests >> securityFilter >> router >> httpResponses
+httpRequests &>> requestLog
+router &>> responseLog

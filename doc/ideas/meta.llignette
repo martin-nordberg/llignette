@@ -1,0 +1,21 @@
+
+
+p: Package {
+    _dependencies = [
+        q,
+        util.stuff,
+        z
+    ]
+    ...
+}
+
+p._dependencies
+p._dependents
+p._name
+
+
+f: (a:T1, b:T2) -> R => ...
+
+f._name
+f._arguments
+f._returnType

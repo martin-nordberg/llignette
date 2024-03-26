@@ -1,0 +1,40 @@
+
+-> Function return type
+=> Function implementation
+
+^>
+
+__>
+
+::>
+
+..>
+
+!>
+
+~>
+
+
+
+
+
+
+
+File~Unopen = (
+    #File,
+    name: String
+)
+
+File~Open = File~Unopen & (
+    stream: Stream
+)
+
+open = fn(file: File~Unopen~>Open) =>
+    file ~= file & (stream = blahblah)
+
+close = fn(file: File~Open~>Unopen) =>
+    file ~= file
+
+
+doWithOutput = fn(stdout: String~IO~>IO) =>
+    stdout ~= "Hello world!"

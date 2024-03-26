@@ -1,0 +1,19 @@
+fb: Package = (
+
+    fizzBuzz1 :: "Using modulo arithmetic on each value",
+    fizzBuzz1 = fn(count: Int64) => (
+        result = _items.join('\n'),
+        _items = map(
+            collection = 1..count,
+            mapping = fn(i:Int64) => (
+                o = "FizzBuzz" when _isFizz and _isBuzz,
+                o = "Fizz" when _isFizz and not _isBuzz,
+                o = "Buzz" when not _isFizz and _isBuzz,
+                o = "{{i}}" otherwise,
+                _isFizz = i mod 3 == 0,
+                _isBuzz = i mod 5 == 0
+            )
+        )
+    )
+
+)

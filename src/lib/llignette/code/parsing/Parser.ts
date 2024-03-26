@@ -5,9 +5,10 @@
 
 import type {ScanningOutcome} from "../scanning/Scanner"
 import type {
-    Alternative, AlternativesSequence,
     BinaryOperationExprTag,
-    Field, FunctionDeclaration,
+    Field,
+    FieldValueType,
+    FunctionDeclaration,
     Identifier,
     Model,
     Module,
@@ -103,18 +104,27 @@ class Parser {
         let typeExpr: Optional<Model> = none()
 
         // Parse the documentation and type in either order.
-        while(true) {
+        while (true) {
             if (this.tokens[this.tokensIndex].tokenType == '#TokenType_ColonColon' && isNone(documentation)) {
                 this.tokensIndex += 1
                 switch (this.tokens[this.tokensIndex].tokenType) {
                     case '#TokenType_BackTickedString':
                         documentation = some(this.#getQuotedStringValue(SourcePos.fromToken(this.tokens[this.tokensIndex])))
                         break
+                    case '#TokenType_TripleBackTickedString':
+                        documentation = some(this.#getTripleQuotedStringValue(SourcePos.fromToken(this.tokens[this.tokensIndex])))
+                        break
                     case '#TokenType_DoubleQuotedString':
                         documentation = some(this.#getQuotedStringValue(SourcePos.fromToken(this.tokens[this.tokensIndex])))
                         break
+                    case '#TokenType_TripleDoubleQuotedString':
+                        documentation = some(this.#getTripleQuotedStringValue(SourcePos.fromToken(this.tokens[this.tokensIndex])))
+                        break
                     case '#TokenType_SingleQuotedString':
                         documentation = some(this.#getQuotedStringValue(SourcePos.fromToken(this.tokens[this.tokensIndex])))
+                        break
+                    case '#TokenType_TripleSingleQuotedString':
+                        documentation = some(this.#getTripleQuotedStringValue(SourcePos.fromToken(this.tokens[this.tokensIndex])))
                         break
                     default:
                         throw Error("Expected documentation string")
@@ -125,26 +135,38 @@ class Parser {
                 const expr: Model = this.parseExprWithBindingPower(0)
                 endSourcePos = expr.sourcePos
                 typeExpr = some(expr)
-            }
-            else {
+            } else {
                 break;
             }
         }
 
-        // Parse the value or the default value.
+        // Parse the value or the default value or a type state change.
         let valueExpr: Optional<Model> = none()
-        let defaultValueExpr: Optional<Model> = none()
+        let valueType: FieldValueType = '#FieldValue_None'
         if (this.tokens[this.tokensIndex].tokenType == '#TokenType_Equals') {
             this.tokensIndex += 1
             const expr: Model = this.parseExprWithBindingPower(0)
             endSourcePos = expr.sourcePos
             valueExpr = some(expr)
-        }
-        else if (this.tokens[this.tokensIndex].tokenType == '#TokenType_QuestionQuestionEquals') {
+            valueType = '#FieldValue_Fixed'
+        } else if (this.tokens[this.tokensIndex].tokenType == '#TokenType_AmpersandEquals') {
             this.tokensIndex += 1
             const expr: Model = this.parseExprWithBindingPower(0)
             endSourcePos = expr.sourcePos
-            defaultValueExpr = some(expr)
+            valueExpr = some(expr)
+            valueType = '#FieldValue_Partial'
+        } else if (this.tokens[this.tokensIndex].tokenType == '#TokenType_QuestionQuestionEquals') {
+            this.tokensIndex += 1
+            const expr: Model = this.parseExprWithBindingPower(0)
+            endSourcePos = expr.sourcePos
+            valueExpr = some(expr)
+            valueType = '#FieldValue_Default'
+        } else if (this.tokens[this.tokensIndex].tokenType == '#TokenType_TildeEquals') {
+            this.tokensIndex += 1
+            const expr: Model = this.parseExprWithBindingPower(0)
+            endSourcePos = expr.sourcePos
+            valueExpr = some(expr)
+            valueType = '#FieldValue_StateChange'
         }
 
         return {
@@ -155,7 +177,7 @@ class Parser {
             documentation,
             typeExpr,
             valueExpr,
-            defaultValueExpr
+            valueType
         }
 
     }
@@ -280,68 +302,23 @@ class Parser {
         return value
     }
 
-    #isTokenAfterRecordFieldName(tokenType: TokenType) {
-        return tokenType == '#TokenType_Comma' ||
-            tokenType == '#TokenType_Equals' ||
-            tokenType == '#TokenType_Colon' ||
-            tokenType == '#TokenType_QuestionQuestionEquals' ||
-            tokenType == '#TokenType_RightParenthesis'
+    #getTripleQuotedStringValue(sourcePos: SourcePos) {
+        let value = sourcePos.getText(this.sourceCode)
+        value = value.substring(3, value.length - 3)
+        // TODO: convert escape sequences
+        // TODO: interpolations
+        return value
     }
 
-    #parseAlternativesSequence(oToken: Token): AlternativesSequence {
-
-        const alternatives : Alternative[] = []
-        let startToken = oToken
-
-        while(true) {
-
-            const value = this.parseExprWithBindingPower(0)
-
-            if (this.tokens[this.tokensIndex].tokenType == '#TokenType_When') {
-                this.tokensIndex += 1
-                const condition = this.parseExprWithBindingPower(0)
-
-                alternatives.push({
-                    key: Symbol(),
-                    tag: '#Model_Alternative',
-                    sourcePos: SourcePos.fromToken(startToken).thru(condition.sourcePos),
-                    value,
-                    condition: some(condition)
-                })
-            }
-            else if (this.tokens[this.tokensIndex].tokenType == '#TokenType_Otherwise') {
-                const endSourcePos = SourcePos.fromToken(this.tokens[this.tokensIndex])
-                this.tokensIndex += 1
-
-                alternatives.push({
-                    key: Symbol(),
-                    tag: '#Model_Alternative',
-                    sourcePos: SourcePos.fromToken(startToken).thru(endSourcePos),
-                    value,
-                    condition: none()
-                })
-
-                if (this.tokens[this.tokensIndex].tokenType == '#TokenType_O') {
-                    throw Error("Alternative 'otherwise' must be the last in the sequence.")
-                }
-            }
-            else {
-                throw Error("Expected 'when' or 'otherwise'")
-            }
-
-            startToken = this.tokens[this.tokensIndex]
-            if (startToken.tokenType != '#TokenType_O') {
-                return {
-                    key:Symbol(),
-                    tag: '#Model_AlternativesSequence',
-                    sourcePos: alternatives[0].sourcePos.thru(alternatives[alternatives.length-1].sourcePos),
-                    alternatives
-                }
-            }
-
-            this.tokensIndex += 1
-        }
-
+    #isTokenAfterRecordFieldName(tokenType: TokenType) {
+        return tokenType == '#TokenType_Comma' ||
+            tokenType == '#TokenType_AmpersandEquals' ||
+            tokenType == '#TokenType_Equals' ||
+            tokenType == '#TokenType_Colon' ||
+            tokenType == '#TokenType_ColonColon' ||
+            tokenType == '#TokenType_QuestionQuestionEquals' ||
+            tokenType == '#TokenType_RightParenthesis' ||
+            tokenType == '#TokenType_TildeEquals'
     }
 
     #parseArrayLiteral(token: Token): Model {
@@ -402,7 +379,7 @@ class Parser {
             throw Error("Expected argument list")
         }
 
-        if (this.tokens[this.tokensIndex].tokenType != '#TokenType_RightDoubleArrow') {
+        if (this.tokens[this.tokensIndex].tokenType != '#TokenType_EqualsArrow') {
             throw Error("Expected double arrow")
         }
 
@@ -481,7 +458,7 @@ class Parser {
                 return {
                     key: Symbol(),
                     tag: '#Model_TypeConstraint_FieldReference',
-                    sourcePos : sourcePos.thru(dotOperand.sourcePos),
+                    sourcePos: sourcePos.thru(dotOperand.sourcePos),
                     operand: dotOperand
                 }
 
@@ -516,7 +493,7 @@ class Parser {
                 return {
                     key: Symbol(),
                     tag: '#Model_TypeConstraint_GreaterThan',
-                    sourcePos : sourcePos.thru(gtOperand.sourcePos),
+                    sourcePos: sourcePos.thru(gtOperand.sourcePos),
                     operand: gtOperand
                 }
 
@@ -525,7 +502,7 @@ class Parser {
                 return {
                     key: Symbol(),
                     tag: '#Model_TypeConstraint_GreaterThan',
-                    sourcePos : sourcePos.thru(gteOperand.sourcePos),
+                    sourcePos: sourcePos.thru(gteOperand.sourcePos),
                     operand: gteOperand
                 }
 
@@ -567,7 +544,7 @@ class Parser {
                 return {
                     key: Symbol(),
                     tag: '#Model_TypeConstraint_LessThan',
-                    sourcePos : sourcePos.thru(ltOperand.sourcePos),
+                    sourcePos: sourcePos.thru(ltOperand.sourcePos),
                     operand: ltOperand
                 }
 
@@ -576,12 +553,9 @@ class Parser {
                 return {
                     key: Symbol(),
                     tag: '#Model_TypeConstraint_LessThan',
-                    sourcePos : sourcePos.thru(lteOperand.sourcePos),
+                    sourcePos: sourcePos.thru(lteOperand.sourcePos),
                     operand: lteOperand
                 }
-
-            case '#TokenType_O':
-                return this.#parseAlternativesSequence(token)
 
             case '#TokenType_SingleQuotedString':
                 return {
@@ -596,6 +570,30 @@ class Parser {
                     key: Symbol(),
                     tag: '#Model_BuiltInType_String',
                     sourcePos: SourcePos.fromToken(token)
+                }
+
+            case '#TokenType_TripleBackTickedString':
+                return {
+                    key: Symbol(),
+                    tag: '#Model_Literal_String_BackTickedBlock',
+                    sourcePos,
+                    value: this.#getTripleQuotedStringValue(sourcePos)
+                }
+
+            case '#TokenType_TripleDoubleQuotedString':
+                return {
+                    key: Symbol(),
+                    tag: '#Model_Literal_String_DoubleQuotedBlock',
+                    sourcePos,
+                    value: this.#getTripleQuotedStringValue(sourcePos)
+                }
+
+            case '#TokenType_TripleSingleQuotedString':
+                return {
+                    key: Symbol(),
+                    tag: '#Model_Literal_String_SingleQuotedBlock',
+                    sourcePos,
+                    value: this.#getTripleQuotedStringValue(sourcePos)
                 }
 
             case '#TokenType_True':
@@ -638,11 +636,11 @@ class Parser {
 
         // Parse as a record if it starts out like one.
         if (this.tokens[this.tokensIndex].tokenType == '#TokenType_Identifier' &&
-             this.#isTokenAfterRecordFieldName(this.tokens[this.tokensIndex+1].tokenType)) {
+            this.#isTokenAfterRecordFieldName(this.tokens[this.tokensIndex + 1].tokenType)) {
             const fields = this.#parseFields()
 
             if (this.tokens[this.tokensIndex].tokenType != '#TokenType_RightParenthesis') {
-                throw Error("Expected " + '#TokenType_RightParenthesis')
+                throw Error("Expected ',' or ')'.")
             }
 
             const endSourcePos = SourcePos.fromToken(this.tokens[this.tokensIndex])
@@ -680,7 +678,7 @@ class Parser {
         switch (opToken.tokenType) {
 
             case '#TokenType_LeftBracket':
-                const rBrToken = this.tokens[this.tokensIndex]
+                let rBrToken = this.tokens[this.tokensIndex]
                 if (rBrToken.tokenType == '#TokenType_RightBracket') {
                     this.tokensIndex += 1
                     return {
@@ -690,7 +688,22 @@ class Parser {
                         baseType: leftOperand
                     }
                 }
-                throw Error("TODO: Array indexing")
+
+                const index = this.parseExprWithBindingPower(0)
+
+                if (this.tokens[this.tokensIndex].tokenType != '#TokenType_RightBracket') {
+                    throw Error("Expected right bracket while parsing array index expression.")
+                }
+
+                rBrToken = this.tokens[this.tokensIndex]
+                this.tokensIndex += 1
+
+                return {
+                    key: Symbol(),
+                    tag: '#Model_ArrayIndexing',
+                    sourcePos: leftOperand.sourcePos.thru(SourcePos.fromToken(rBrToken)),
+                    baseExpression: leftOperand
+                }
 
             case '#TokenType_LeftParenthesis':
                 const rightOperand = this.#parseParenthesizedExpression(opToken)
@@ -700,6 +713,14 @@ class Parser {
                     sourcePos: leftOperand.sourcePos.thru(rightOperand.sourcePos),
                     leftOperand,
                     rightOperand
+                }
+
+            case '#TokenType_Otherwise':
+                return {
+                    key: Symbol(),
+                    tag: '#Model_OtherwiseExpr',
+                    sourcePos: leftOperand.sourcePos.thru(SourcePos.fromToken(opToken)),
+                    operand: leftOperand
                 }
 
             case '#TokenType_Question':
@@ -762,98 +783,184 @@ const postfixBindingPowers = new Map<TokenType, number>()
 
 let level = 1
 
-infixBindingPowers.set('#TokenType_AmpersandAmpersand', {
-    left: level,
-    right: level + 1,
-    exprTag: '#Model_IntersectLowPrecedenceExpr'
-})
+infixBindingPowers.set(
+    '#TokenType_TildeArrow',
+    {left: level, right: level + 1, exprTag: '#Model_TypeStateEffect'}
+)
 
 level += 2
 
-infixBindingPowers.set('#TokenType_VerticalBar', {left: level, right: level + 1, exprTag: '#Model_UnionExpr'})
+infixBindingPowers.set(
+    '#TokenType_AmpersandAmpersand',
+    {left: level, right: level + 1, exprTag: '#Model_IntersectLowPrecedenceExpr'}
+)
 
 level += 2
 
-infixBindingPowers.set('#TokenType_Ampersand', {left: level, right: level + 1, exprTag: '#Model_IntersectExpr'})
+infixBindingPowers.set(
+    '#TokenType_VerticalBar',
+    {left: level, right: level + 1, exprTag: '#Model_UnionExpr'}
+)
 
 level += 2
 
-infixBindingPowers.set('#TokenType_Where', {left: level, right: level + 1, exprTag: '#Model_WhereExpr'})
+infixBindingPowers.set(
+    '#TokenType_Ampersand',
+    {left: level, right: level + 1, exprTag: '#Model_IntersectExpr'}
+)
 
 level += 2
 
-infixBindingPowers.set('#TokenType_Or', {left: level, right: level + 1, exprTag: '#Model_LogicalOrExpr'})
-infixBindingPowers.set('#TokenType_Xor', {left: level, right: level + 1, exprTag: '#Model_LogicalXorExpr'})
+infixBindingPowers.set(
+    '#TokenType_Tilde',
+    {left: level, right: level + 1, exprTag: '#Model_TypeState'}
+)
 
 level += 2
 
-infixBindingPowers.set('#TokenType_And', {left: level, right: level + 1, exprTag: '#Model_LogicalAndExpr'})
+infixBindingPowers.set(
+    '#TokenType_When',
+    {left: level, right: level + 1, exprTag: '#Model_WhenExpr'}
+)
+postfixBindingPowers.set('#TokenType_Otherwise', level)
 
 level += 2
 
-prefixBindingPowers.set('#TokenType_Not', {right: level, exprTag: '#Model_LogicalNotExpr'})
+infixBindingPowers.set(
+    '#TokenType_Or',
+    {left: level, right: level + 1, exprTag: '#Model_LogicalOrExpr'}
+)
+infixBindingPowers.set(
+    '#TokenType_Xor',
+    {left: level, right: level + 1, exprTag: '#Model_LogicalXorExpr'}
+)
 
 level += 2
 
-infixBindingPowers.set('#TokenType_EqualsEquals', {left: level, right: level + 1, exprTag: '#Model_EqualsExpr'})
-infixBindingPowers.set('#TokenType_ExclamationEquals', {left: level, right: level + 1, exprTag: '#Model_NotEqualsExpr'})
-infixBindingPowers.set('#TokenType_GreaterThan', {left: level, right: level + 1, exprTag: '#Model_GreaterThanExpr'})
-infixBindingPowers.set('#TokenType_GreaterThanOrEquals', {
-    left: level,
-    right: level + 1,
-    exprTag: '#Model_GreaterThanOrEqualsExpr'
-})
-infixBindingPowers.set('#TokenType_LessThan', {left: level, right: level + 1, exprTag: '#Model_LessThanExpr'})
-infixBindingPowers.set('#TokenType_LessThanOrEquals', {
-    left: level,
-    right: level + 1,
-    exprTag: '#Model_LessThanOrEqualsExpr'
-})
+infixBindingPowers.set(
+    '#TokenType_And',
+    {left: level, right: level + 1, exprTag: '#Model_LogicalAndExpr'}
+)
 
 level += 2
 
-infixBindingPowers.set('#TokenType_In', {left: level, right: level + 1, exprTag: '#Model_InExpr'})
-infixBindingPowers.set('#TokenType_Is', {left: level, right: level + 1, exprTag: '#Model_IsExpr'})
-infixBindingPowers.set('#TokenType_EqualsTilde', {left: level, right: level + 1, exprTag: '#Model_MatchExpr'})
-infixBindingPowers.set('#TokenType_ExclamationTilde', {left: level, right: level + 1, exprTag: '#Model_NotMatchExpr'})
+prefixBindingPowers.set(
+    '#TokenType_Not',
+    {right: level, exprTag: '#Model_LogicalNotExpr'}
+)
 
 level += 2
 
-infixBindingPowers.set('#TokenType_DotDot', {left: level, right: level + 1, exprTag: '#Model_RangeExpr'})
+infixBindingPowers.set(
+    '#TokenType_EqualsEquals',
+    {left: level, right: level + 1, exprTag: '#Model_EqualsExpr'}
+)
+infixBindingPowers.set(
+    '#TokenType_ExclamationEquals',
+    {left: level, right: level + 1, exprTag: '#Model_NotEqualsExpr'}
+)
+infixBindingPowers.set(
+    '#TokenType_GreaterThan',
+    {left: level, right: level + 1, exprTag: '#Model_GreaterThanExpr'}
+)
+infixBindingPowers.set(
+    '#TokenType_GreaterThanOrEquals',
+    {left: level, right: level + 1, exprTag: '#Model_GreaterThanOrEqualsExpr'}
+)
+infixBindingPowers.set(
+    '#TokenType_LessThan',
+    {left: level, right: level + 1, exprTag: '#Model_LessThanExpr'}
+)
+infixBindingPowers.set(
+    '#TokenType_LessThanOrEquals',
+    {left: level, right: level + 1, exprTag: '#Model_LessThanOrEqualsExpr'}
+)
 
 level += 2
 
-infixBindingPowers.set('#TokenType_Dash', {left: level, right: level + 1, exprTag: '#Model_SubtractionExpr'})
-infixBindingPowers.set('#TokenType_Plus', {left: level, right: level + 1, exprTag: '#Model_AdditionExpr'})
+infixBindingPowers.set(
+    '#TokenType_In',
+    {left: level, right: level + 1, exprTag: '#Model_InExpr'}
+)
+infixBindingPowers.set(
+    '#TokenType_Is',
+    {left: level, right: level + 1, exprTag: '#Model_IsExpr'}
+)
 
 level += 2
 
-infixBindingPowers.set('#TokenType_Asterisk', {left: level, right: level + 1, exprTag: '#Model_MultiplicationExpr'})
-infixBindingPowers.set('#TokenType_Slash', {left: level, right: level + 1, exprTag: '#Model_DivisionExpr'})
+infixBindingPowers.set(
+    '#TokenType_DotDot',
+    {left: level, right: level + 1, exprTag: '#Model_RangeExpr'}
+)
 
 level += 2
 
-infixBindingPowers.set('#TokenType_AsteriskAsterisk', {left: level, right: level + 1, exprTag: '#Model_ExponentiationExpr'})
+infixBindingPowers.set(
+    '#TokenType_Dash',
+    {left: level, right: level + 1, exprTag: '#Model_SubtractionExpr'}
+)
+infixBindingPowers.set(
+    '#TokenType_Plus',
+    {left: level, right: level + 1, exprTag: '#Model_AdditionExpr'}
+)
 
 level += 2
 
-prefixBindingPowers.set('#TokenType_Dash', {right: level, exprTag: '#Model_NegationExpr'})
+infixBindingPowers.set(
+    '#TokenType_Asterisk',
+    {left: level, right: level + 1, exprTag: '#Model_MultiplicationExpr'}
+)
+infixBindingPowers.set(
+    '#TokenType_Mod',
+    {left: level, right: level + 1, exprTag: '#Model_ModuloExpr'}
+)
+infixBindingPowers.set(
+    '#TokenType_Slash',
+    {left: level, right: level + 1, exprTag: '#Model_DivisionExpr'}
+)
 
 level += 2
 
-infixBindingPowers.set('#TokenType_RightArrow', {left: level, right: level + 1, exprTag: '#Model_FunctionArrowExpr'})
+infixBindingPowers.set(
+    '#TokenType_AsteriskAsterisk',
+    {left: level, right: level + 1, exprTag: '#Model_ExponentiationExpr'}
+)
 
 level += 2
 
-prefixBindingPowers.set('#TokenType_AtSign', {right: level, exprTag: '#Model_AnnotationExpr'})
+prefixBindingPowers.set(
+    '#TokenType_Dash',
+    {right: level, exprTag: '#Model_NegationExpr'}
+)
 
 level += 2
 
-infixBindingPowers.set('#TokenType_Dot', {left: level, right: level + 1, exprTag: '#Model_FieldReferenceExpr'})
+infixBindingPowers.set(
+    '#TokenType_DashArrow',
+    {left: level, right: level + 1, exprTag: '#Model_FunctionArrowExpr'}
+)
 
 level += 2
 
-prefixBindingPowers.set('#TokenType_Hash', {right: level, exprTag: '#Model_TagExpr'})
+prefixBindingPowers.set(
+    '#TokenType_AtSign',
+    {right: level, exprTag: '#Model_AnnotationExpr'}
+)
+
+level += 2
+
+infixBindingPowers.set(
+    '#TokenType_Dot',
+    {left: level, right: level + 1, exprTag: '#Model_FieldReferenceExpr'}
+)
+
+level += 2
+
+prefixBindingPowers.set(
+    '#TokenType_Hash',
+    {right: level, exprTag: '#Model_TagExpr'}
+)
 
 level += 2
 

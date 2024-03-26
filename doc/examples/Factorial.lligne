@@ -1,11 +1,11 @@
 
 fact: Package = {
 
-    NaturalInt64: Type = Int64 & $value >= 0
+    NaturalInt64: Type = Int64 & >=0
 
     @cached
     factorial = fn(n: NaturalInt64) -> NaturalInt64 =>
-        1 when n == 0
-        | n * factorial(n - 1) when n > 1
+        o 1 when n == 0
+        o n * factorial(n - 1) when n > 1
 
 }

@@ -726,7 +726,7 @@ prefixBindingPowers.set('#TokenType_Dash', {right: level, exprTag: '#NegationExp
 
 level += 2
 
-infixBindingPowers.set('#TokenType_RightArrow', {left: level, right: level + 1, exprTag: '#FunctionArrowExpr'})
+infixBindingPowers.set('#TokenType_DashArrow', {left: level, right: level + 1, exprTag: '#FunctionArrowExpr'})
 
 level += 2
 

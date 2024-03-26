@@ -10,24 +10,12 @@ import type {Optional} from "../../util/Optional";
 //=====================================================================================================================
 
 /**
- * One alternative in a sequence.
+ * An array indexing expression (postfix '[expr]').
  */
-export type Alternative = Keyed & {
-    readonly tag: '#Model_Alternative',
+export type ArrayIndexing = Keyed & {
+    readonly tag: '#Model_ArrayIndexing',
     readonly sourcePos: SourcePos,
-    readonly condition: Optional<Model>,
-    readonly value: Model
-}
-
-//=====================================================================================================================
-
-/**
- * A sequence of conditional alternatives.
- */
-export type AlternativesSequence = Keyed & {
-    readonly tag: '#Model_AlternativesSequence',
-    readonly sourcePos: SourcePos,
-    readonly alternatives: Alternative[]
+    readonly baseExpression: Model
 }
 
 //=====================================================================================================================
@@ -58,34 +46,35 @@ export type ArrayType = Keyed & {
  * Enumeration of operators linking a left hand side and a right hand side.
  */
 let binaryOperationExprTagObj = {
-    '#Model_AdditionExpr': true,
-    '#Model_DivisionExpr': true,
-    '#Model_EqualsExpr': true,
-    '#Model_ExponentiationExpr': true,
-    '#Model_FieldOptReferenceExpr': true,
-    '#Model_FieldReferenceExpr': true,
-    '#Model_FunctionArrowExpr': true,
-    '#Model_FunctionCallExpr': true,
-    '#Model_GreaterThanExpr': true,
-    '#Model_GreaterThanOrEqualsExpr': true,
-    '#Model_InExpr': true,
-    '#Model_IntersectExpr': true,
-    '#Model_IntersectLowPrecedenceExpr': true,
-    '#Model_IsExpr': true,
-    '#Model_LessThanExpr': true,
-    '#Model_LessThanOrEqualsExpr': true,
-    '#Model_LogicalAndExpr': true,
-    '#Model_LogicalOrExpr': true,
-    '#Model_LogicalXorExpr': true,
-    '#Model_MatchExpr': true,
-    '#Model_MultiplicationExpr': true,
-    '#Model_NotEqualsExpr': true,
-    '#Model_NotMatchExpr': true,
-    '#Model_RangeExpr': true,
-    '#Model_SubtractionExpr': true,
-    '#Model_UnionExpr': true,
-    '#Model_WhenExpr': true,
-    '#Model_WhereExpr': true,
+    '#Model_AdditionExpr': "+",
+    '#Model_DivisionExpr': "/",
+    '#Model_EqualsExpr': "==",
+    '#Model_ExponentiationExpr': "**",
+    '#Model_FieldReferenceExpr': ".",
+    '#Model_FunctionArrowExpr': "->",
+    '#Model_FunctionCallExpr': "...(...)",
+    '#Model_GreaterThanExpr': ">",
+    '#Model_GreaterThanOrEqualsExpr': ">=",
+    '#Model_InExpr': "in",
+    '#Model_IntersectExpr': "&",
+    '#Model_IntersectLowPrecedenceExpr': "&&",
+    '#Model_IsExpr': "is",
+    '#Model_LessThanExpr': "<",
+    '#Model_LessThanOrEqualsExpr': "<=",
+    '#Model_LogicalAndExpr': "and",
+    '#Model_LogicalOrExpr': "or",
+    '#Model_LogicalXorExpr': "xor",
+    '#Model_ModuloExpr': "mod",
+    '#Model_MultiplicationExpr': "*",
+    '#Model_NotEqualsExpr': "!=",
+    '#Model_RangeExpr': "..",
+    '#Model_SubtractionExpr': "-",
+    '#Model_TypeState': "~",
+    '#Model_TypeStateChange': "~=",
+    '#Model_TypeStateEffect': "~>",
+    '#Model_UnionExpr': "|",
+    '#Model_WhenExpr': "when",
+    '#Model_WhereExpr': "where",
 }
 
 export type BinaryOperationExprTag = keyof typeof binaryOperationExprTagObj
@@ -231,11 +220,11 @@ export function isStringLiteral(expr: Model): expr is StringLiteral {
  * Enumeration of operations with one operand (linked by the operands tree).
  */
 let typeConstraintTagObj = {
-    '#Model_TypeConstraint_GreaterThan': true,
-    '#Model_TypeConstraint_GreaterThanOrEqual': true,
-    '#Model_TypeConstraint_LessThan': true,
-    '#Model_TypeConstraint_LessThanOrEqual': true,
-    '#Model_TypeConstraint_FieldReference': true,
+    '#Model_TypeConstraint_GreaterThan': ">",
+    '#Model_TypeConstraint_GreaterThanOrEqual': ">=",
+    '#Model_TypeConstraint_LessThan': "<",
+    '#Model_TypeConstraint_LessThanOrEqual': "<=",
+    '#Model_TypeConstraint_FieldReference': ".",
 }
 
 export type TypeConstraintTag = keyof typeof typeConstraintTagObj
@@ -258,12 +247,13 @@ export function isTypeConstraint(expr: Model): expr is TypeConstraint {
  * Enumeration of operations with one operand (linked by the operands tree).
  */
 let unaryOperationExprTagObj = {
-    '#Model_AnnotationExpr': true,
-    '#Model_LogicalNotExpr': true,
-    '#Model_NegationExpr': true,
-    '#Model_OptionalExpr': true,
-    '#Model_ParenthesizedExpr': true,
-    '#Model_TagExpr': true,
+    '#Model_AnnotationExpr': "@",
+    '#Model_LogicalNotExpr': "not",
+    '#Model_NegationExpr': "-",
+    '#Model_OptionalExpr': "?",
+    '#Model_OtherwiseExpr': "otherwise",
+    '#Model_ParenthesizedExpr': "(...)",
+    '#Model_TagExpr': "#",
 }
 
 export type UnaryOperationExprTag = keyof typeof unaryOperationExprTagObj
@@ -283,6 +273,13 @@ export function isUnaryOperationExpr(expr: Model): expr is UnaryOperationExpr {
 //=====================================================================================================================
 //=====================================================================================================================
 
+export type FieldValueType =
+    | '#FieldValue_Default'
+    | '#FieldValue_Fixed'
+    | '#FieldValue_Partial'
+    | '#FieldValue_None'
+    | '#FieldValue_StateChange'
+
 /**
  * A field within a structure.
  */
@@ -293,7 +290,7 @@ export type Field = Keyed & {
     readonly documentation: Optional<string>,
     readonly typeExpr: Optional<Model>,
     readonly valueExpr: Optional<Model>,
-    readonly defaultValueExpr: Optional<Model>
+    readonly valueType: FieldValueType
 }
 
 //=====================================================================================================================
@@ -329,9 +326,9 @@ export function isRecord(expr: Model): expr is Record {
  * Llignette model nodes.
  */
 export type Model =
-    | AlternativesSequence
-    | ArrayType
+    | ArrayIndexing
     | ArrayLiteral
+    | ArrayType
     | BinaryOperationExpr
     | BooleanLiteral
     | BuiltInType

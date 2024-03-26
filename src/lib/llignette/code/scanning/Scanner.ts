@@ -136,10 +136,10 @@ class Scanner {
             return this.#scanNumber()
         }
 
-        // Handle individual punctuation characters.
+        // Handle punctuation characters.
         switch (ch) {
             case '&':
-                return this.#oneOrTwoCharToken('#TokenType_Ampersand', '&', '#TokenType_AmpersandAmpersand')
+                return this.#scanAfterAmpersand()
             case '*':
                 return this.#oneOrTwoCharToken('#TokenType_Asterisk', '*', '#TokenType_AsteriskAsterisk')
             case '@':
@@ -151,19 +151,21 @@ class Scanner {
             case ',':
                 return this.#token('#TokenType_Comma')
             case '-':
-                return this.#oneOrTwoCharToken('#TokenType_Dash', '>', '#TokenType_RightArrow')
+                return this.#oneOrTwoCharToken('#TokenType_Dash', '>', '#TokenType_DashArrow')
             case '.':
                 return this.#oneToThreeCharToken('#TokenType_Dot', '.', '#TokenType_DotDot', '.', '#TokenType_DotDotDot')
             case '=':
                 return this.#scanAfterEquals()
             case '!':
-                return this.#scanAfterExclamationMark()
+                return this.#oneOrTwoCharToken('#TokenType_Exclamation', '=', '#TokenType_ExclamationEquals')
             case '<':
                 return this.#oneOrTwoCharToken('#TokenType_LessThan', '=', '#TokenType_LessThanOrEquals')
             case '>':
                 return this.#oneOrTwoCharToken('#TokenType_GreaterThan', '=', '#TokenType_GreaterThanOrEquals')
             case '#':
                 return this.#token('#TokenType_Hash')
+            case '~':
+                return this.#scanAfterTilde()
             case '{':
                 return this.#token('#TokenType_LeftBrace')
             case '[':
@@ -190,8 +192,6 @@ class Scanner {
                 return this.#scanSingleQuotedString()
             case '|':
                 return this.#token('#TokenType_VerticalBar')
-            case '◆':
-                return this.#token('#TokenType_O')
             case '\0':
                 return {
                     sourceOffset: this.markedPos,
@@ -257,7 +257,24 @@ class Scanner {
 
     }
 
-    // Scans one of: '=', '==', '===', '=~'.
+    // Scans one of '&', '&=', or '&&'.
+    #scanAfterAmpersand(): Token {
+
+        if (this.charAhead1 == '=') {
+            this.#advance()
+            return this.#token('#TokenType_AmpersandEquals')
+        }
+
+        if (this.charAhead1 == '&') {
+            this.#advance()
+            return this.#token('#TokenType_AmpersandAmpersand')
+        }
+
+        return this.#token('#TokenType_Ampersand')
+
+    }
+
+    // Scans one of: '=', '==', '==='.
     #scanAfterEquals(): Token {
 
         if (this.charAhead1 == '=') {
@@ -275,33 +292,10 @@ class Scanner {
 
         if (this.charAhead1 == '>') {
             this.#advance()
-            return this.#token('#TokenType_RightDoubleArrow')
-        }
-
-        if (this.charAhead1 == '~') {
-            this.#advance()
-            return this.#token('#TokenType_EqualsTilde')
+            return this.#token('#TokenType_EqualsArrow')
         }
 
         return this.#token('#TokenType_Equals')
-
-    }
-
-    // Scans one of: '!', '!=', '!~'.
-    #scanAfterExclamationMark(): Token {
-
-        if (this.charAhead1 == '=') {
-            this.#advance()
-
-            return this.#token('#TokenType_ExclamationEquals')
-        }
-
-        if (this.charAhead1 == '~') {
-            this.#advance()
-            return this.#token('#TokenType_ExclamationTilde')
-        }
-
-        return this.#token('#TokenType_Exclamation')
 
     }
 
@@ -327,6 +321,22 @@ class Scanner {
         }
 
         return this.#token('#TokenType_Question')
+    }
+
+    // Scans one of the following tokens: '~', '~>', '~='
+    #scanAfterTilde(): Token {
+
+        if (this.charAhead1 == '>') {
+            this.#advance()
+            return this.#token('#TokenType_TildeArrow')
+        }
+
+        if (this.charAhead1 == '=') {
+            this.#advance()
+            return this.#token('#TokenType_TildeEquals')
+        }
+
+        return this.#token('#TokenType_Tilde')
     }
 
     // Consumes a multiline back-ticked string.
@@ -544,14 +554,13 @@ const keywords: { [key: string]: TokenType } = {
     "is": '#TokenType_Is',
     "in": '#TokenType_In',
     "Int64": '#TokenType_Int64',
+    "mod": '#TokenType_Mod',
     "not": '#TokenType_Not',
-    "o": '#TokenType_O',
     "or": '#TokenType_Or',
     "otherwise": '#TokenType_Otherwise',
     "String": '#TokenType_String',
     "true": '#TokenType_True',
     "when": '#TokenType_When',
-    "where": '#TokenType_Where',
     "xor": '#TokenType_Xor',
 }
 

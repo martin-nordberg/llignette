@@ -4,6 +4,7 @@ import {parseModule} from "../../../../src/lib/llignette/code/parsing/Parser";
 
 
 describe('Simple Parsing Tests', () => {
+
     const check = function (sourceCode: string) {
         let scanResult = scan(sourceCode)
 
@@ -44,6 +45,15 @@ describe('Simple Parsing Tests', () => {
         check(`s1 = "123"`)
         check(`s2 = '789'`)
         check("s3 = `three`")
+        check(`x = """
+        yea
+        verily
+        """`)
+        check(`x = '''
+        yea
+        verily
+        '''`)
+        check("x = ```\n  yea\n  verily```")
     })
 
     it("parses arithmetic", () => {
@@ -63,9 +73,9 @@ describe('Simple Parsing Tests', () => {
         check("x = ()")
     })
 
-    it("parses logical expressions", () => {
+    it("parses Boolean expressions", () => {
         check("x = true and false")
-        check("x = a and b")
+        check("x : Boolean = a and b")
         check("x = a and b or c")
         check("x = a and not b")
         check("x = not a or b")
@@ -78,11 +88,6 @@ describe('Simple Parsing Tests', () => {
         check("x = 1 + 1 < 2 / 1")
         check("x = 1 + 1 <= 2 / 1")
         check("x = 1 + 1 >= 2 / 1")
-    })
-
-    it("parses regex operations", () => {
-        check("m = x =~ y")
-        check("m = x !~ y")
     })
 
     it("parses ranges", () => {
@@ -100,7 +105,10 @@ describe('Simple Parsing Tests', () => {
         check("x = (a = 3, b=4)")
         check("x = (a: Int64 = 3)")
         check("x = (a)")
+        check("x = (a::'stuff')")
         check("x = ()")
+        check("x = (t = #Tag, state = #Ready, value: String)")
+        check("c = sqrt(_a**2 + _b**2), _a = 3, _b = 4")
     })
 
     it("parses documentation", () => {
@@ -116,12 +124,24 @@ describe('Simple Parsing Tests', () => {
 
     it("parses function declarations", () => {
         check("f = fn(x:Float64) => x**3 + 2 * x**2")
+        check("f : () -> (x:Int64, y:Int64), f = fn() => (x=1, y=3)")
+        check("f = fn() => (tag = #Tag)")
     })
 
     it("parses function calls", () => {
         check("y = f(x=5)")
         check("y = f(x)")
         check("y = f(5)")
+    })
+
+    it("parses array indexing", () => {
+        check("y = y0[1]")
+        check("y = yAB[m-1][n+1]")
+    })
+
+    it("parses type combinations", () => {
+        check("x: Int64 | String")
+        check("x: Float64 && <0 | >100")
     })
 
     it("parses type constraints", () => {
@@ -131,21 +151,16 @@ describe('Simple Parsing Tests', () => {
         check("q = (x: Float64 & >0 & units('mm'), y: Float64 & >0 & units('mm')) & .x < .y")
     })
 
-    it("parses alternatives", () => {
-        check(`
-            x = o 12 when y == 3
-                o 13 when y == 2
-                o 14 otherwise
-        `)
-        check(`
-            x = ◆ 12 when y == 3
-                ◆ 13 when y == 2
-                ◆ 14 otherwise
-        `)
+    it("parses where clauses", () => {
     })
 
-    it("parses where clauses", () => {
-        check("c = sqrt(a**2 + b**2) where (a = 3, b = 4)")
+    it("parses 'in' expressions", () => {
+        check("athlete = studentActivity in sports")
+    })
+
+    it("parses type states", () => {
+        check("close : fn(file: File~Open~>Closed) => true")
+        check("x = 4, file ~= file & (open: true)")
     })
 
 });

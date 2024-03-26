@@ -1,9 +1,17 @@
 
 ｟
-    name: String & .size() > 0 & .size() <=30 & .matches(regex(`[A-Za-z]+`)),
+    name: String & .size() > 0 & .size() <= 30 & .matches(regex(`[A-Za-z]+`)),
     salary: Float64 & >=0.0 & <1_000_000.0,
     commission: Float64 & >=0.0 & <=20.0 ??= 0.0
 ｠ & .salary <= 100_000 or .commission <= 5.0
+
+
+Special Fields
+
+field: String - An ordinary field
+!field: String - Automatic conversion for the type of !field
+_field: String - A temporary variable not included in the final record
+
 
 
 

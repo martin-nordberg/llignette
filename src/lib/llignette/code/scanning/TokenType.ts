@@ -14,6 +14,7 @@ export type TokenType =
     // Punctuation
     | '#TokenType_Ampersand'
     | '#TokenType_AmpersandAmpersand'
+    | '#TokenType_AmpersandEquals'
     | '#TokenType_Asterisk'
     | '#TokenType_AsteriskAsterisk'
     | '#TokenType_AtSign'
@@ -21,16 +22,16 @@ export type TokenType =
     | '#TokenType_ColonColon'
     | '#TokenType_Comma'
     | '#TokenType_Dash'
+    | '#TokenType_DashArrow'
     | '#TokenType_Dot'
     | '#TokenType_DotDot'
     | '#TokenType_DotDotDot'
     | '#TokenType_Equals'
+    | '#TokenType_EqualsArrow'
     | '#TokenType_EqualsEquals'
     | '#TokenType_EqualsEqualsEquals'
-    | '#TokenType_EqualsTilde'
     | '#TokenType_Exclamation'
     | '#TokenType_ExclamationEquals'
-    | '#TokenType_ExclamationTilde'
     | '#TokenType_GreaterThan'
     | '#TokenType_GreaterThanOrEquals'
     | '#TokenType_Hash'
@@ -44,13 +45,14 @@ export type TokenType =
     | '#TokenType_QuestionColon'
     | '#TokenType_QuestionQuestion'
     | '#TokenType_QuestionQuestionEquals'
-    | '#TokenType_RightArrow'
-    | '#TokenType_RightDoubleArrow'
     | '#TokenType_RightBrace'
     | '#TokenType_RightBracket'
     | '#TokenType_RightParenthesis'
     | '#TokenType_Semicolon'
     | '#TokenType_Slash'
+    | '#TokenType_Tilde'
+    | '#TokenType_TildeArrow'
+    | '#TokenType_TildeEquals'
     | '#TokenType_VerticalBar'
 
     // Keywords
@@ -63,14 +65,13 @@ export type TokenType =
     | '#TokenType_In'
     | '#TokenType_Int64'
     | '#TokenType_Is'
+    | '#TokenType_Mod'
     | '#TokenType_Not'
-    | '#TokenType_O'
     | '#TokenType_Or'
     | '#TokenType_Otherwise'
     | '#TokenType_String'
     | '#TokenType_True'
     | '#TokenType_When'
-    | '#TokenType_Where'
     | '#TokenType_Xor'
 
     // String Literals
@@ -110,6 +111,8 @@ export function textOfTokenType(tt: TokenType): string {
             return "&"
         case '#TokenType_AmpersandAmpersand':
             return "&&"
+        case '#TokenType_AmpersandEquals':
+            return "&="
         case '#TokenType_Asterisk':
             return "*"
         case '#TokenType_AsteriskAsterisk':
@@ -124,6 +127,8 @@ export function textOfTokenType(tt: TokenType): string {
             return ","
         case '#TokenType_Dash':
             return "-"
+        case '#TokenType_DashArrow':
+            return "->"
         case '#TokenType_Dot':
             return "."
         case '#TokenType_DotDot':
@@ -132,18 +137,16 @@ export function textOfTokenType(tt: TokenType): string {
             return "..."
         case '#TokenType_Equals':
             return "="
+        case '#TokenType_EqualsArrow':
+            return "=>"
         case '#TokenType_EqualsEquals':
             return "=="
         case '#TokenType_EqualsEqualsEquals':
             return "==="
-        case '#TokenType_EqualsTilde':
-            return "=~"
         case '#TokenType_Exclamation':
             return "!"
         case '#TokenType_ExclamationEquals':
             return "!="
-        case '#TokenType_ExclamationTilde':
-            return "!~"
         case '#TokenType_GreaterThan':
             return ">"
         case '#TokenType_GreaterThanOrEquals':
@@ -170,10 +173,6 @@ export function textOfTokenType(tt: TokenType): string {
             return "??"
         case '#TokenType_QuestionQuestionEquals':
             return "??="
-        case '#TokenType_RightArrow':
-            return "->"
-        case '#TokenType_RightDoubleArrow':
-            return "=>"
         case '#TokenType_RightBrace':
             return "}"
         case '#TokenType_RightBracket':
@@ -184,6 +183,12 @@ export function textOfTokenType(tt: TokenType): string {
             return ";"
         case '#TokenType_Slash':
             return "/"
+        case '#TokenType_Tilde':
+            return "~"
+        case '#TokenType_TildeArrow':
+            return "~>"
+        case '#TokenType_TildeEquals':
+            return "~="
         case '#TokenType_VerticalBar':
             return "|"
 
@@ -206,10 +211,10 @@ export function textOfTokenType(tt: TokenType): string {
             return "Int64"
         case '#TokenType_Is':
             return "is"
+        case '#TokenType_Mod':
+            return "mod"
         case '#TokenType_Not':
             return "not"
-        case '#TokenType_O':
-            return "o"
         case '#TokenType_Or':
             return "or"
         case '#TokenType_Otherwise':
@@ -220,8 +225,6 @@ export function textOfTokenType(tt: TokenType): string {
             return "true"
         case '#TokenType_When':
             return "when"
-        case '#TokenType_Where':
-            return "where"
         case '#TokenType_Xor':
             return "xor"
 
