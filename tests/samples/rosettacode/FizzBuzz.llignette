@@ -1,11 +1,11 @@
 fb: Package = (
 
     fizzBuzz1 :: "Using modulo arithmetic on each value",
-    fizzBuzz1 = fn(count: Int64) => (
+    fizzBuzz1 = fn(count: Int64) -> String => (
         result = _items.join('\n'),
         _items = map(
             collection = 1..count,
-            mapping = fn(i:Int64) => (
+            mapping = fn(i:Int64) -> String => (
                 o = "FizzBuzz" when _isFizz and _isBuzz,
                 o = "Fizz" when _isFizz and not _isBuzz,
                 o = "Buzz" when not _isFizz and _isBuzz,

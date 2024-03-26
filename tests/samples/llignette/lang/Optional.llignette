@@ -18,61 +18,61 @@ llignette &= (
             | Some
 
         none : () -> None,
-        none = fn() => (
+        none = fn() -> None => (
             tag = #None
         )
 
         eq :: "Equality",
-        eq : (self: Optional, option2: Optional) -> Bool,
-        eq ??= fn(self: Optional, option2: Optional) =>
+        eq : (self: Optional, option2: Optional) -> Boolean,
+        eq ??= fn(self: Optional, option2: Optional) -> Boolean =>
                 self is None and option2 is None or
                 self is Some and option2 is Some and self.value == option2.value
 
         exists :: "Tests whether a value is present and satisfies a predicate",
         exists : (self: Optional, predicate: (value: T) -> Boolean) -> Boolean,
-        exists ??= fn(self: Optional, predicate: (value: T) -> Boolean) =>
+        exists ??= fn(self: Optional, predicate: (value: T) -> Boolean) -> Boolean =>
             self is Some and predicate(self.value)
 
         filter : (self: Optional, predicate: (value: T) -> Boolean) -> Optional,
-        filter ??= fn(self: Optional, predicate: (value: T) -> Boolean) => (
+        filter ??= fn(self: Optional, predicate: (value: T) -> Boolean) -> Optional => (
             o = self when self is Some and predicate(self.value),
             o = none otherwise
         )
 
         isNone : (self: Optional) -> Boolean,
-        isNone ??= fn(self: Optional) =>
+        isNone ??= fn(self: Optional) -> Boolean =>
             self is None
 
         isSome : (self: Optional) -> Boolean,
-        isSome ??= fn(self: Optional) =>
+        isSome ??= fn(self: Optional) -> Boolean =>
             option is Some
 
-        map : (U: Type, self: Optional, mapFn: (value: T) -> U) -> Optional(U),
-        map ??= fn(U: Type, self: Optional, mapFn: (value: T) -> U) => (
-            o = Optional(U).none() when self is None(),
-            o = Optional(U).some(mapFn(self.value)) otherwise
+        map : (U: Type, self: Optional, mapFn: (value: T) -> U) -> options(U).Optional,
+        map ??= fn(U: Type, self: Optional, mapFn: (value: T) -> U) -> options(U).Optional => (
+            o = options(U).Optional.none() when self is None(),
+            o = options(U).Optional.some(mapFn(self.value)) otherwise
         )
 
         match : (U: Type, self: Optional, dispatch: (ifNone: () -> U, ifSome: (value: T) -> U)) -> U,
-        match ??= fn(U: Type, self: Optional, dispatch: (ifNone: () -> U, ifSome: (value: T) -> U)) => (
+        match ??= fn(U: Type, self: Optional, dispatch: (ifNone: () -> U, ifSome: (value: T) -> U)) -> U => (
             o = dispatch.ifNone() when self is None(),
             o = dispatch.ifSome(self.value) otherwise
         )
 
         some : (value: T) -> Some,
-        some ??= fn(value: T) => (
+        some ??= fn(value: T) -> Some => (
             tag = #Some,
             value
         )
 
         toArray : (self: Optional(T)) -> T[],
-        toArray ??= fn(self) => (
+        toArray ??= fn(self) -> T[] => (
             o = [self.value] when self is Some(T),
             o = [] otherwise
         )
 
         value : (self: Optional, defaultValue: T) -> T,
-        value ??= fn(self: Optional, defaultValue: T) => (
+        value ??= fn(self: Optional, defaultValue: T) -> T => (
             o = self.value when self is Some(T),
             o = defaultValue otherwise
         )

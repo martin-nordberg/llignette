@@ -123,9 +123,9 @@ describe('Simple Parsing Tests', () => {
     })
 
     it("parses function declarations", () => {
-        check("f = fn(x:Float64) => x**3 + 2 * x**2")
-        check("f : () -> (x:Int64, y:Int64), f = fn() => (x=1, y=3)")
-        check("f = fn() => (tag = #Tag)")
+        check("f = fn(x:Float64) -> Float64 => x**3 + 2 * x**2")
+        check("f : () -> (x:Int64, y:Int64), f = fn() -> (x:Int64, y:Int64) => (x=1, y=3)")
+        check("f = fn() -> (tag: #Tag) => (tag = #Tag)")
     })
 
     it("parses function calls", () => {

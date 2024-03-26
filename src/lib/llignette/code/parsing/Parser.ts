@@ -379,6 +379,13 @@ class Parser {
             throw Error("Expected argument list")
         }
 
+        let returnType: Optional<Model> = none()
+
+        if (this.tokens[this.tokensIndex].tokenType == '#TokenType_DashArrow') {
+            this.tokensIndex += 1
+            returnType = some(this.parseExprWithBindingPower(0))
+        }
+
         if (this.tokens[this.tokensIndex].tokenType != '#TokenType_EqualsArrow') {
             throw Error("Expected double arrow")
         }
@@ -392,6 +399,7 @@ class Parser {
             tag: '#Model_FunctionDeclaration',
             sourcePos: SourcePos.fromToken(fnToken).thru(body.sourcePos),
             argumentRecord,
+            returnType,
             body
         }
     }

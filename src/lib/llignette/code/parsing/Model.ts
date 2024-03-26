@@ -160,6 +160,7 @@ export type FunctionDeclaration = Keyed & {
     readonly tag: '#Model_FunctionDeclaration',
     readonly sourcePos: SourcePos,
     readonly argumentRecord: Record,
+    readonly returnType: Optional<Model>
     readonly body: Model
 }
 
