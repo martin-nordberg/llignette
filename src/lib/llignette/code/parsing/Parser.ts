@@ -10,8 +10,10 @@ import type {
     FieldValueType,
     FunctionDeclaration,
     Identifier,
+    InjectedRecord,
     Model,
     Module,
+    RecordEntry,
     UnaryOperationExpr,
     UnaryOperationExprTag
 } from "./Model";
@@ -75,7 +77,7 @@ class Parser {
      */
     parseModule(): Module {
 
-        const fields: Field[] = this.#parseFields()
+        const entries: RecordEntry[] = this.#parseRecordEntries()
 
         if (this.tokens[this.tokensIndex].tokenType != '#TokenType_Eof') {
             throw Error("Expected end of file")
@@ -84,8 +86,8 @@ class Parser {
         return {
             tag: '#Model_Module',
             key: Symbol(),
-            sourcePos: fields[0].sourcePos.thru(fields[fields.length - 1].sourcePos),
-            fields
+            sourcePos: entries[0].sourcePos.thru(entries[entries.length - 1].sourcePos),
+            entries
         }
 
     }
@@ -216,7 +218,7 @@ class Parser {
                     }
                 }
 
-                // Subsequent injected value after two intervening new lines.
+                    // Subsequent injected value after two intervening new lines.
                 // TODO: annotation, identifier interpolation
                 else if (this.tokens[this.tokensIndex].tokenType == '#TokenType_DotDotDot') {
                     const betweenTokensStart = this.tokens[this.tokensIndex - 1].sourceOffset +
@@ -437,6 +439,22 @@ class Parser {
         }
     }
 
+    #parseInjectedRecord(): InjectedRecord {
+
+        const startToken = this.tokens[this.tokensIndex]
+        this.tokensIndex += 1
+
+        const injectedValue = this.parseExprWithBindingPower(0)
+
+        return {
+            key: Symbol(),
+            tag: '#Model_InjectedRecord',
+            sourcePos: SourcePos.fromToken(startToken).thru(injectedValue.sourcePos),
+            injectedValue
+        }
+
+    }
+
     #parseLeftHandSide(): Model {
 
         const token = this.tokens[this.tokensIndex]
@@ -652,14 +670,17 @@ class Parser {
                 key: Symbol(),
                 tag: '#Model_Record',
                 sourcePos,
-                fields: []
+                entries: []
             }
         }
 
-        // Parse as a record if it starts out like one.
-        if (this.tokens[this.tokensIndex].tokenType == '#TokenType_Identifier' &&
-            this.#isTokenAfterRecordFieldName(this.tokens[this.tokensIndex + 1].tokenType)) {
-            const fields = this.#parseFields()
+        // Parse as a record if it starts out with a field name and qualifier.
+        const lookAheadIsField = this.tokens[this.tokensIndex].tokenType == '#TokenType_Identifier' &&
+            this.#isTokenAfterRecordFieldName(this.tokens[this.tokensIndex + 1].tokenType)
+        const lookAheadIsInjection = this.tokens[this.tokensIndex].tokenType == '#TokenType_DotDotDot'
+
+        if (lookAheadIsField || lookAheadIsInjection) {
+            const entries = this.#parseRecordEntries()
 
             if (this.tokens[this.tokensIndex].tokenType != '#TokenType_RightParenthesis') {
                 throw Error("Expected ',' or ')'.")
@@ -672,7 +693,7 @@ class Parser {
                 key: Symbol(),
                 tag: '#Model_Record',
                 sourcePos: SourcePos.fromToken(lParenToken).thru(endSourcePos),
-                fields
+                entries
             }
         }
 
@@ -756,6 +777,68 @@ class Parser {
         }
 
         throw Error("Unfinished postfix parsing code: '" + opToken.tokenType + "'.")
+
+    }
+
+    #parseRecordEntries(): RecordEntry[] {
+
+        let entries: RecordEntry[] = []
+
+        // First entry.
+        if (this.tokens[this.tokensIndex].tokenType == '#TokenType_Identifier') {
+            entries.push(this.#parseField())
+        } else if (this.tokens[this.tokensIndex].tokenType == '#TokenType_DotDotDot') {
+            entries.push(this.#parseInjectedRecord())
+        } else {
+            throw new Error("Expected field declaration or record injection.")
+        }
+
+        // Subsequent entries.
+        while (true) {
+            // Subsequent entry after a comma.
+            if (this.tokens[this.tokensIndex].tokenType == '#TokenType_Comma') {
+                this.tokensIndex += 1
+                if (this.tokens[this.tokensIndex].tokenType == '#TokenType_Identifier') {
+                    entries.push(this.#parseField())
+                    continue
+                }
+                if (this.tokens[this.tokensIndex].tokenType == '#TokenType_DotDotDot') {
+                    entries.push(this.#parseInjectedRecord())
+                    continue
+                }
+            }
+
+            // Subsequent field name after an intervening new line.
+            else if (this.tokens[this.tokensIndex].tokenType == '#TokenType_Identifier') {
+                const betweenTokensStart = this.tokens[this.tokensIndex - 1].sourceOffset +
+                    this.tokens[this.tokensIndex - 1].sourceLength
+                const betweenTokensEnd = this.tokens[this.tokensIndex].sourceOffset
+
+                const betweenTokens = this.sourceCode.substring(betweenTokensStart, betweenTokensEnd)
+                if (betweenTokens.split("\n").length > 1) {
+                    entries.push(this.#parseField())
+                    continue
+                }
+            }
+
+                // Subsequent injected value after two intervening new lines.
+            // TODO: annotation, identifier interpolation
+            else if (this.tokens[this.tokensIndex].tokenType == '#TokenType_DotDotDot') {
+                const betweenTokensStart = this.tokens[this.tokensIndex - 1].sourceOffset +
+                    this.tokens[this.tokensIndex - 1].sourceLength
+                const betweenTokensEnd = this.tokens[this.tokensIndex].sourceOffset
+
+                const betweenTokens = this.sourceCode.substring(betweenTokensStart, betweenTokensEnd)
+                if (betweenTokens.split("\n").length > 1) {
+                    entries.push(this.#parseInjectedRecord())
+                    continue
+                }
+            }
+
+            break
+        }
+
+        return entries
 
     }
 

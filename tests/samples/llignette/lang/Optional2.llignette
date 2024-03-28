@@ -1,0 +1,129 @@
+
+llignette &= (
+
+  lang: Package &= (
+
+    withOptional = fn(V: Type) => (
+
+        _Value_ = V.name,
+        _Optional_ = "Optional╞ _Value_ ╡",
+        _None_ = "None╞ _Value_ ╡",
+        _noneTag_ = "╞ _Optional_ ╡_None",
+        _Some_ = "Some╞ _Value_ ╡",
+        _someTag_ = "╞ _Optional_ ╡_Some",
+
+        «_None_» : Type = (
+            tag: #«_noneTag_»
+        )
+
+        «_Some_» : Type = (
+            tag: #«_someTag_»,
+            value: «_Value_»
+        )
+
+        «_Optional_» : Type =
+            «_None_»
+            | «_Some_»
+
+        eq :: "Equality",
+        eq : (self: «_Optional_», option2: «_Optional_») -> Boolean,
+        eq ??= fn(self: «_Optional_», option2: «_Optional_») -> Boolean =>
+                self is «_None_» and option2 is «_None_» or
+                self is «_Some_» and option2 is «_Some_» and self.value == option2.value
+
+        exists :: "Tests whether a value is present and satisfies a predicate",
+        exists : (self: «_Optional_», predicate: (value: «_Value_») -> Boolean) -> Boolean,
+        exists ??= fn(self: «_Optional_», predicate: (value: «_Value_») -> Boolean) -> Boolean =>
+            self is «_Some_» and predicate(self.value)
+
+        filter : (self: «_Optional_», predicate: (value: «_Value_») -> Boolean) -> «_Optional_»,
+        filter ??= fn(self: «_Optional_», predicate: (value: «_Value_») -> Boolean) -> «_Optional_» => (
+            o = self when self is «_Some_» and predicate(self.value),
+            o = none otherwise
+        )
+
+        isNone : (self: «_Optional_») -> Boolean,
+        isNone ??= fn(self: «_Optional_») -> Boolean =>
+            self is «_None_»
+
+        isSome : (self: «_Optional_») -> Boolean,
+        isSome ??= fn(self: «_Optional_») -> Boolean =>
+            option is «_Some_»
+
+        withMap = fn(U: Type) => (
+            _MappedValue_ = U.name,
+            _OptionalU_ = "Optional╞ _MappedValue_ ╡",
+
+            map : (self: «_Optional_», mapFn: (value: «_Value_») -> «_MappedValue_») -> «_OptionalU_»,
+            map ??= fn(U: Type, self: «_Optional_», mapFn: (value: «_Value_») -> «_MappedValue_») -> «_OptionalU_» => (
+                o = «_OptionalU_».none() when self is «_None_»,
+                o = «_OptionalU_».some(mapFn(self.value)) otherwise
+            )
+        )
+
+        withMatch = fn(U: Type) => (
+            _MappedValue_ = U.name,
+            _OptionalU_ = "Optional╞ _MappedValue_ ╡",
+
+            match : (self: «_Optional_», dispatch: (ifNone: () -> U, ifSome: (value: «_Value_») -> «_MappedValue_»)) -> «_MappedValue_»,
+            match ??= fn(self: «_Optional_», dispatch: (ifNone: () -> U, ifSome: (value: «_Value_») -> «_MappedValue_»)) -> «_MappedValue_» => (
+                o = dispatch.ifNone() when self is «_None_»,
+                o = dispatch.ifSome(self.value) otherwise
+            )
+        )
+
+        none : () -> «_None_»,
+        none = fn() -> «_None_» => (
+            tag = #«_noneTag_»
+        )
+
+        some : (value: «_Value_») -> «_Some_»,
+        some ??= fn(value: «_Value_») -> «_Some_» => (
+            tag = #«_someTag_»,
+            value
+        )
+
+        toArray : (self: «_Optional_») -> «_Value_»[],
+        toArray ??= fn(self) -> «_Value_»[] => (
+            o = [self.value] when self is «_Some_»,
+            o = [] otherwise
+        )
+
+        value : (self: «_Optional_», defaultValue: «_Value_») -> «_Value_»,
+        value ??= fn(self: «_Optional_», defaultValue: «_Value_») -> «_Value_» => (
+            o = self.value when self is «_Some_»,
+            o = defaultValue otherwise
+        )
+
+    )
+  )
+)
+
+
+decl : Package &= (
+
+    MyStuff : Type = (
+        a: String,
+        b: Int64,
+        next: OptionalMyStuff
+    )
+
+    ...withOptional(MyStuff)
+
+    ...withMap(MyOtherStuff),
+    ...withMap(MySpecialStuff)
+
+    ...withMatch(MyOutput)
+    
+)
+
+
+usage : Package &= (
+
+    open decl
+
+    stuff: OptionalMyStuff = some(_theStuff)
+
+    _theStuff_: MyStuff = (a: "A", b: 3, next: none())
+
+)

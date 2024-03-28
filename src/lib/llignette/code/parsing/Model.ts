@@ -297,11 +297,26 @@ export type Field = Keyed & {
 //=====================================================================================================================
 
 /**
- * A structure is a set of fields.
+ * A record value injected into a larger record using '...'.
+ */
+export type InjectedRecord = Keyed & {
+    readonly tag: '#Model_InjectedRecord',
+    readonly sourcePos: SourcePos,
+    readonly injectedValue: Model,
+}
+
+//=====================================================================================================================
+
+export type RecordEntry = Field | InjectedRecord
+
+//=====================================================================================================================
+
+/**
+ * A structure is a set of fields or injected records.
  */
 export type Structure = Keyed & {
     readonly sourcePos: SourcePos,
-    readonly fields: Field[]
+    readonly entries: RecordEntry[]
 }
 
 //=====================================================================================================================

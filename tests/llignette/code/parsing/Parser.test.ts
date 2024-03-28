@@ -163,4 +163,11 @@ describe('Simple Parsing Tests', () => {
         check("x = 4, file ~= file & (open: true)")
     })
 
+    it("parses injected fields", () => {
+        check("p = (...q, r=42)")
+        check("p = (twelve=12, ...q, r=42)")
+        check("p = (twelve=12, ...q(e), r=42)")
+        check("p = (twelve=12\n ...q&s&t, r=42)")
+    })
+
 });
