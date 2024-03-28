@@ -4,8 +4,8 @@ fact: Package = (
     NaturalInt64 : Type = Int64 & >=0
 
     factorial = fn(n: NaturalInt64) -> NaturalInt64 => (
-        result = 1 when n == 0,
-        result = n * factorial(n - 1) when n > 1
-    ).result
+        o = 1 when n == 0
+        o = n * factorial(n - 1) when n > 1
+    )
 
 )

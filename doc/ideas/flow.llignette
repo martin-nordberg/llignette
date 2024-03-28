@@ -1,22 +1,22 @@
 
 // Examples
 
-once >> runBatch >> fileOut("report.txt")
+once --o--> runBatch --o--> fileOut("report.txt")
 
-stdin >> lines >> greeting >> stdout
+stdin --o--> lines --o--> greeting >> stdout
 
-httpRequests >> router >> httpResponses
+httpRequests --o--> router --o--> httpResponses
 
-mouseMoves(component) >> handler
+mouseMoves(component) --o--> handler
 
 
 // Fork & join
 
-stuff >>[ process ]>> combine
+stuff --o-->[ process ]--o--> combine
 
 
 // Split
 
-httpRequests >> securityFilter >> router >> httpResponses
-httpRequests &>> requestLog
-router &>> responseLog
+httpRequests --o--> securityFilter --o--> router --o--> httpResponses
+httpRequests &--o--> requestLog
+router &--o--> responseLog

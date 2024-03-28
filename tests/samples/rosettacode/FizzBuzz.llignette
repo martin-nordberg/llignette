@@ -1,17 +1,71 @@
 fb: Package = (
 
     fizzBuzz1 :: "Using modulo arithmetic on each value",
-    fizzBuzz1 = fn(count: Int64) -> String => (
-        result = _items.join('\n'),
-        _items = map(
+    fizzBuzz1 = fn(count: Int64) -> String => o(
+        o = _items_.join('\n')
+        _items_ = map(
             collection = 1..count,
             mapping = fn(i:Int64) -> String => (
-                o = "FizzBuzz" when _isFizz and _isBuzz,
-                o = "Fizz" when _isFizz and not _isBuzz,
-                o = "Buzz" when not _isFizz and _isBuzz,
+                o = "FizzBuzz" when _isFizz_ and _isBuzz_,
+                o = "Fizz" when _isFizz_ and not _isBuzz_,
+                o = "Buzz" when not _isFizz_ and _isBuzz_,
                 o = "{{i}}" otherwise,
-                _isFizz = i mod 3 == 0,
-                _isBuzz = i mod 5 == 0
+                _isFizz_ = i mod 3 == 0,
+                _isBuzz_ = i mod 5 == 0
+            )
+        )
+    )
+
+
+    fizzBuzz2 :: "Using step-as-you-go logic #2, immutable values"
+    fizzBuzz2 = fn(count: Int64) -> String => (
+        o = _result_.answer
+
+        _Result_: Type = (
+            answer: String,
+            nextMultipleOf3,
+            nextMultipleOf5,
+            nextMultipleOf15,
+        )
+
+        _start_: Result = (
+            answer = "",
+            nextMultipleOf3 = 3,
+            nextMultipleOf5 = 5,
+            nextMultipleOf15 = 15,
+        )
+
+        _result_ = reduce(
+            startingValue = _start_,
+            collection = 1..count,
+            accumulator = fn(prior: Result, i: Int64) => (
+                o = (
+                    answer = "{{prior.answer}}FizzBuzz\n",
+                    nextMultipleOf3 = prior.nextMultipleOf3 + 3,
+                    nextMultipleOf5 = prior.nextMultipleOf5 + 5,
+                    nextMultipleOf15 = prior.nextMultipleOf15 + 15,
+                ) when i == nextMultipleOf15
+
+                o = (
+                    answer = "{{prior.answer}}Fizz\n",
+                    nextMultipleOf3 = prior.nextMultipleOf3 + 3,
+                    nextMultipleOf5 = prior.nextMultipleOf5,
+                    nextMultipleOf15 = prior.nextMultipleOf15,
+                ) when i == nextMultipleOf3
+
+                o = (
+                    answer = "{{prior.answer}}Buzz\n",
+                    nextMultipleOf3 = prior.nextMultipleOf3,
+                    nextMultipleOf5 = prior.nextMultipleOf5 + 5,
+                    nextMultipleOf15 = prior.nextMultipleOf15,
+                ) when i == nextMultipleOf5
+
+                o = (
+                    answer = "{{prior.answer}}{{i}}\n"
+                    nextMultipleOf3 = prior.nextMultipleOf3,
+                    nextMultipleOf5 = prior.nextMultipleOf5,
+                    nextMultipleOf15 = prior.nextMultipleOf15,
+                ) otherwise
             )
         )
     )

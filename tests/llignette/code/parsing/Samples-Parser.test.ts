@@ -3,6 +3,7 @@ import {scan} from "../../../../src/lib/llignette/code/scanning/Scanner";
 import {parseModule} from "../../../../src/lib/llignette/code/parsing/Parser";
 
 import srcFactorial from '../../../samples/rosettacode/Factorial.llignette?raw'
+import srcFibonacci from '../../../samples/rosettacode/Fibonacci.llignette?raw'
 import srcFizzBuzz from '../../../samples/rosettacode/FizzBuzz.llignette?raw'
 import srcOptional from '../../../samples/llignette/lang/Optional.llignette?raw'
 
@@ -19,6 +20,10 @@ describe('Parsing Samples', () => {
 
     it("parses the code for Factorial", () => {
         check(srcFactorial)
+    })
+
+    it("parses the code for Fibonacci", () => {
+        check(srcFibonacci)
     })
 
     it("parses the code for FizzBuzz", () => {

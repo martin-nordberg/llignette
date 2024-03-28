@@ -203,8 +203,22 @@ class Parser {
                     }
                 }
 
-                // Subsequent field after an intervening blank line.
+                // Subsequent field name after an intervening new line.
                 else if (this.tokens[this.tokensIndex].tokenType == '#TokenType_Identifier') {
+                    const betweenTokensStart = this.tokens[this.tokensIndex - 1].sourceOffset +
+                        this.tokens[this.tokensIndex - 1].sourceLength
+                    const betweenTokensEnd = this.tokens[this.tokensIndex].sourceOffset
+
+                    const betweenTokens = this.sourceCode.substring(betweenTokensStart, betweenTokensEnd)
+                    if (betweenTokens.split("\n").length > 1) {
+                        fields.push(this.#parseField())
+                        continue
+                    }
+                }
+
+                // Subsequent injected value after two intervening new lines.
+                // TODO: annotation, identifier interpolation
+                else if (this.tokens[this.tokensIndex].tokenType == '#TokenType_DotDotDot') {
                     const betweenTokensStart = this.tokens[this.tokensIndex - 1].sourceOffset +
                         this.tokens[this.tokensIndex - 1].sourceLength
                     const betweenTokensEnd = this.tokens[this.tokensIndex].sourceOffset
