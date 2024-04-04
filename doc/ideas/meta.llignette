@@ -1,6 +1,17 @@
 
 
-p: Package {
+Metatypes
+
+VALUE
+TYPE
+PACKAGE <: VALUE
+FUNCTION
+
+
+v :: "A value" ^: VALUE : Int64 = 30
+
+
+p ^: PACKAGE {
     _dependencies = [
         q,
         util.stuff,
@@ -9,9 +20,19 @@ p: Package {
     ...
 }
 
-p._dependencies
-p._dependents
-p._name
+p.^dependencies
+p.^dependents
+p.^name
+
+p^.dependencies
+p^.dependents
+p^.name
+
+p^dependencies
+p^dependents
+p^name
+p^parent
+p^path()
 
 
 f: (a:T1, b:T2) -> R => ...

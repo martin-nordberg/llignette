@@ -1,0 +1,20 @@
+
+miscellaneous :: PACKAGE &= (
+
+    is_with_isNot = fn(package :: PACKAGE) => (
+
+        o = package.functions.filter(
+            fn(f::FUNCTION) -> Boolean => f.name.matches("is[A-Z].*") and f.returnType is Boolean
+        ).map(
+            fn(f::FUNCTION) -> f.type => (
+                isNot<<f.name.substring(2)>> = fn(??)->?? =>
+                    not f(??)
+            )
+        ).reduce(
+            (),
+            fn(p::PACKAGE, r::VALUE) => p & r
+        )
+
+    )
+
+)

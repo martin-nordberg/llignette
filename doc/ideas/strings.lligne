@@ -10,17 +10,17 @@ s4 = """
   over multiple lines
 """,
 
-s4 = '''
+s5 = '''
   triple single-quoted
   over multiple lines
 ''',
 
-s5 = ```
+s6 = ```
   triple back-ticked
   over multiple lines
 ```,
 
-s6 =
+s7 =
   ! Documentation strings
   ! with only leading delimiters
   ,

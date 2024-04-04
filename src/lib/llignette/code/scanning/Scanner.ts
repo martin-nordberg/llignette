@@ -25,7 +25,7 @@ export function scan(sourceCode: string): ScanningOutcome {
     const scanner = new Scanner(sourceCode)
 
     // Scan the entire source code.
-    scanner.scan()
+    scanner.scan('#TokenType_Eof')
 
     // Extract the results.
     return {
@@ -57,7 +57,7 @@ class Scanner {
         this.newLineOffsets = []
         this.tokens = []
 
-        // Read the first character.
+        // Read the first two characters.
         if (sourceCode.length > 0) {
             this.charAhead1 = sourceCode.charAt(0)
         }
@@ -70,10 +70,15 @@ class Scanner {
     /**
      * Converts the source code to an array of tokens.
      */
-    scan() {
+    scan(untilTokenType: TokenType) {
         while (true) {
             let token = this.#readToken()
             this.tokens.push(token)
+
+            if (token.tokenType == untilTokenType) {
+                this.markedPos = this.currentPos
+                break
+            }
 
             if (token.tokenType == '#TokenType_Eof') {
                 // Two extra EOF tokens for no lookahead surprises.
@@ -110,6 +115,59 @@ class Scanner {
         const whiteSpaceChars = " \t\r\n"
 
         return whiteSpaceChars.indexOf(ch) >= 0
+    }
+
+    // Determines whether a given character could be the second or later character of an identifier.
+    #isIdentifierPart(ch: string, chNext: string): boolean {
+        return this.#isIdentifierStart(ch) || this.#isDigit(ch) ||
+            ch == '-' && (this.#isIdentifierStart(chNext) || this.#isDigit(chNext))
+    }
+
+    // Determines whether a given character could be the opening character of an identifier.
+    #isIdentifierStart(ch: string): boolean {
+        // TODO: needs Unicode identifier chars
+        return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch == '_'
+    }
+
+    // Scans a sequence of characters that could be one or two characters in length.
+    #oneOrTwoCharToken(
+        oneCharType: TokenType,
+        secondChar: string,
+        twoCharType: TokenType
+    ): Token {
+
+        if (this.charAhead1 == secondChar) {
+            this.#advance()
+            return this.#token(twoCharType)
+        }
+
+        return this.#token(oneCharType)
+
+    }
+
+    // Scans a sequence of characters that could be one, two, or three characters in length.
+    #oneToThreeCharToken(
+        oneCharType: TokenType,
+        secondChar: string,
+        twoCharType: TokenType,
+        thirdChar: string,
+        threeCharType: TokenType
+    ): Token {
+
+        if (this.charAhead1 == secondChar) {
+            this.#advance()
+
+            if (this.charAhead1 == thirdChar) {
+                this.#advance()
+
+                return this.#token(threeCharType)
+            }
+
+            return this.#token(twoCharType)
+        }
+
+        return this.#token(oneCharType)
+
     }
 
     /** Returns the next token from the scanner. */
@@ -177,7 +235,7 @@ class Scanner {
             case '?':
                 return this.#scanAfterQuestionMark()
             case '}':
-                return this.#token('#TokenType_RightBrace')
+                return this.#oneOrTwoCharToken('#TokenType_RightBrace', '}', '#TokenType_RightGuillemot')
             case ']':
                 return this.#token('#TokenType_RightBracket')
             case ')':
@@ -201,59 +259,6 @@ class Scanner {
         }
 
         return this.#token('#TokenType_UnrecognizedChar')
-
-    }
-
-    // Determines whether a given character could be the second or later character of an identifier.
-    #isIdentifierPart(ch: string, chNext: string): boolean {
-        return this.#isIdentifierStart(ch) || this.#isDigit(ch) ||
-            ch == '-' && (this.#isIdentifierStart(chNext) || this.#isDigit(chNext))
-    }
-
-    // Determines whether a given character could be the opening character of an identifier.
-    #isIdentifierStart(ch: string): boolean {
-        // TODO: needs Unicode identifier chars
-        return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch == '_'
-    }
-
-    // Scans a sequence of characters that could be one or two characters in length.
-    #oneOrTwoCharToken(
-        oneCharType: TokenType,
-        secondChar: string,
-        twoCharType: TokenType
-    ): Token {
-
-        if (this.charAhead1 == secondChar) {
-            this.#advance()
-            return this.#token(twoCharType)
-        }
-
-        return this.#token(oneCharType)
-
-    }
-
-    // Scans a sequence of characters that could be one, two, or three characters in length.
-    #oneToThreeCharToken(
-        oneCharType: TokenType,
-        secondChar: string,
-        twoCharType: TokenType,
-        thirdChar: string,
-        threeCharType: TokenType
-    ): Token {
-
-        if (this.charAhead1 == secondChar) {
-            this.#advance()
-
-            if (this.charAhead1 == thirdChar) {
-                this.#advance()
-
-                return this.#token(threeCharType)
-            }
-
-            return this.#token(twoCharType)
-        }
-
-        return this.#token(oneCharType)
 
     }
 
@@ -339,16 +344,20 @@ class Scanner {
         return this.#token('#TokenType_Tilde')
     }
 
-    // Consumes a multiline back-ticked string.
+    // Consumes a back-ticked string.
     #scanBackTickedString(): Token {
 
         if (this.charAhead1 == '`' && this.charAhead2 == '`') {
             this.#advance()
             this.#advance()
-            return this.#scanTripleQuotedString('`', '#TokenType_TripleBackTickedString')
+            this.tokens.push(this.#token('#TokenType_TripleBackTick'))
+            this.markedPos = this.currentPos
+            return this.#scanTripleStringContent("`", '#TokenType_TripleBackTick')
         }
 
-        return this.#scanQuotedString('`', '#TokenType_BackTickedString')
+        this.tokens.push(this.#token('#TokenType_BackTick'))
+        this.markedPos = this.currentPos
+        return this.#scanStringContent("`", '#TokenType_BackTick')
     }
 
     // Scans the remainder of a string literal after the initial double quote character has been consumed.
@@ -357,10 +366,14 @@ class Scanner {
         if (this.charAhead1 == '"' && this.charAhead2 == '"') {
             this.#advance()
             this.#advance()
-            return this.#scanTripleQuotedString('"', '#TokenType_TripleDoubleQuotedString')
+            this.tokens.push(this.#token('#TokenType_TripleDoubleQuote'))
+            this.markedPos = this.currentPos
+            return this.#scanTripleStringContent('"', '#TokenType_TripleDoubleQuote')
         }
 
-        return this.#scanQuotedString('"', '#TokenType_DoubleQuotedString')
+        this.tokens.push(this.#token('#TokenType_DoubleQuote'))
+        this.markedPos = this.currentPos
+        return this.#scanStringContent('"', '#TokenType_DoubleQuote')
 
     }
 
@@ -463,12 +476,33 @@ class Scanner {
 
     }
 
+    // Scans the remainder of a string literal after the initial single quote character has been consumed.
+    #scanSingleQuotedString(): Token {
+
+        if (this.charAhead1 == "'" && this.charAhead2 == "'") {
+            this.#advance()
+            this.#advance()
+            this.tokens.push(this.#token('#TokenType_TripleSingleQuote'))
+            this.markedPos = this.currentPos
+            return this.#scanTripleStringContent("'", '#TokenType_TripleSingleQuote')
+        }
+
+        this.tokens.push(this.#token('#TokenType_SingleQuote'))
+        this.markedPos = this.currentPos
+        return this.#scanStringContent("'", '#TokenType_SingleQuote')
+
+    }
+
     // Scans a single line string up to given delimiter, returning given token type.
-    #scanQuotedString(delimiter: string, tokenType: TokenType): Token {
+    #scanStringContent(delimiter: string, tokenType: TokenType): Token {
 
         while (true) {
             switch (this.charAhead1) {
                 case delimiter:
+                    if (this.currentPos - this.markedPos > 0) {
+                        this.tokens.push(this.#token('#TokenType_StringFragment'))
+                        this.markedPos = this.currentPos
+                    }
                     this.#advance()
                     return this.#token(tokenType)
 
@@ -476,11 +510,28 @@ class Scanner {
                     this.#advance()
                     // TODO: handle escape sequences properly
                     this.#advance()
-                    break;
+                    break
 
                 case '\n':
                 case '\0':
                     return this.#token('#TokenType_UnclosedString')
+
+                case '{':
+                    if (this.charAhead2 == '{') {
+                        if (this.currentPos - this.markedPos > 0) {
+                            this.tokens.push(this.#token('#TokenType_StringFragment'))
+                            this.markedPos = this.currentPos
+                        }
+                        this.#advance()
+                        this.#advance()
+                        this.tokens.push(this.#token('#TokenType_LeftGuillemot'))
+                        this.markedPos = this.currentPos
+
+                        this.scan('#TokenType_RightGuillemot')
+                    } else {
+                        this.#advance()
+                    }
+                    break
 
                 default:
                     this.#advance()
@@ -489,40 +540,50 @@ class Scanner {
 
     }
 
-    // Scans the remainder of a string literal after the initial single quote character has been consumed.
-    #scanSingleQuotedString(): Token {
-
-        if (this.charAhead1 == "'" && this.charAhead2 == "'") {
-            this.#advance()
-            this.#advance()
-            return this.#scanTripleQuotedString("'", '#TokenType_TripleSingleQuotedString')
-        }
-
-        return this.#scanQuotedString("'", '#TokenType_SingleQuotedString')
-
-    }
-
-    // Scans a multi line string up to given delimiter, returning given token type.
-    #scanTripleQuotedString(delimiter: string, tokenType: TokenType): Token {
+    // Scans a single line string up to given delimiter, returning given token type.
+    #scanTripleStringContent(delimiter: string, tokenType: TokenType): Token {
 
         while (true) {
             switch (this.charAhead1) {
                 case delimiter:
-                    this.#advance()
+                    if (this.currentPos - this.markedPos > 0 && this.charAhead1 == delimiter && this.charAhead2 == delimiter) {
+                        this.tokens.push(this.#token('#TokenType_StringFragment'))
+                        this.markedPos = this.currentPos
 
-                    if (this.charAhead1 == delimiter) {
                         this.#advance()
-
-                        if (this.charAhead1 == delimiter) {
-                            this.#advance()
-                            return this.#token(tokenType)
-                        }
+                        this.#advance()
+                        this.#advance()
+                        return this.#token(tokenType)
                     }
 
-                    break;
+                    this.#advance()
+                    break
+
+                case '\\':
+                    this.#advance()
+                    // TODO: handle escape sequences properly
+                    this.#advance()
+                    break
 
                 case '\0':
                     return this.#token('#TokenType_UnclosedString')
+
+                case '{':
+                    if (this.charAhead2 == '{') {
+                        if (this.currentPos - this.markedPos > 0) {
+                            this.tokens.push(this.#token('#TokenType_StringFragment'))
+                            this.markedPos = this.currentPos
+                        }
+                        this.#advance()
+                        this.#advance()
+                        this.tokens.push(this.#token('#TokenType_LeftGuillemot'))
+                        this.markedPos = this.currentPos
+
+                        this.scan('#TokenType_RightGuillemot')
+                    } else {
+                        this.#advance()
+                    }
+                    break
 
                 default:
                     this.#advance()

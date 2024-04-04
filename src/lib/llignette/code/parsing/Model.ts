@@ -15,7 +15,8 @@ import type {Optional} from "../../util/Optional";
 export type ArrayIndexing = Keyed & {
     readonly tag: '#Model_ArrayIndexing',
     readonly sourcePos: SourcePos,
-    readonly baseExpression: Model
+    readonly baseExpression: Model,
+    readonly index: Model
 }
 
 //=====================================================================================================================
@@ -188,6 +189,14 @@ export type Int64Literal = Keyed & {
 
 //=====================================================================================================================
 
+export type StringFragment = Keyed & {
+    readonly tag: '#Model_Literal_StringFragment',
+    readonly sourcePos: SourcePos,
+    readonly value: string
+}
+
+//=====================================================================================================================
+
 /**
  * String literals distinguished by start/stop delimiters.
  */
@@ -195,10 +204,10 @@ let stringLiteralTagObj = {
     '#Model_Literal_String_BackTicked': true,
     '#Model_Literal_String_DoubleQuoted': true,
     '#Model_Literal_String_SingleQuoted': true,
-    '#Model_Literal_String_BackTickedBlock': true,
-    '#Model_Literal_String_DoubleQuotedBlock': true,
-    '#Model_Literal_String_SingleQuotedBlock': true,
-    // TODO: exclamation string
+    '#Model_Literal_String_TripleBackTicked': true,
+    '#Model_Literal_String_TripleDoubleQuote': true,
+    '#Model_Literal_String_TripleSingleQuoted': true,
+    // TODO: exclamation string?
 }
 
 export type StringLiteralTag = keyof typeof stringLiteralTagObj
@@ -208,7 +217,7 @@ let stringLiteralTagSet = new Set(Object.keys(stringLiteralTagObj))
 export type StringLiteral = Keyed & {
     readonly tag: StringLiteralTag,
     readonly sourcePos: SourcePos,
-    readonly value: string
+    readonly fragments: Model[]
 }
 
 export function isStringLiteral(expr: Model): expr is StringLiteral {
@@ -288,7 +297,7 @@ export type Field = Keyed & {
     readonly tag: '#Model_Field',
     readonly sourcePos: SourcePos,
     readonly fieldName: Identifier,
-    readonly documentation: Optional<string>,
+    readonly documentation: Optional<StringLiteral>,
     readonly typeExpr: Optional<Model>,
     readonly valueExpr: Optional<Model>,
     readonly valueType: FieldValueType
@@ -355,8 +364,13 @@ export type Model =
     | Int64Literal
     | Record
     | StringLiteral
+    | StringFragment
     | TypeConstraint
     | UnaryOperationExpr
+
+//=====================================================================================================================
+
+export type ModelTag = Model["tag"]
 
 //=====================================================================================================================
 

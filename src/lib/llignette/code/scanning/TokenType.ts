@@ -75,13 +75,18 @@ export type TokenType =
     | '#TokenType_Xor'
 
     // String Literals
-    | '#TokenType_BackTickedString'
-    | '#TokenType_DoubleQuotedString'
     | '#TokenType_ExclamationString'
-    | '#TokenType_SingleQuotedString'
-    | '#TokenType_TripleBackTickedString'
-    | '#TokenType_TripleDoubleQuotedString'
-    | '#TokenType_TripleSingleQuotedString'
+
+    | '#TokenType_BackTick'
+    | '#TokenType_DoubleQuote'
+    | '#TokenType_SingleQuote'
+    | '#TokenType_TripleBackTick'
+    | '#TokenType_TripleDoubleQuote'
+    | '#TokenType_TripleSingleQuote'
+
+    | '#TokenType_StringFragment'
+    | '#TokenType_LeftGuillemot'
+    | '#TokenType_RightGuillemot'
 
     // Other Literals
     | '#TokenType_FloatingPointLiteral'
@@ -229,20 +234,28 @@ export function textOfTokenType(tt: TokenType): string {
             return "xor"
 
         // Literal Strings
-        case '#TokenType_BackTickedString':
-            return "[back-ticked string]"
-        case '#TokenType_DoubleQuotedString':
-            return "[double quoted string]"
         case '#TokenType_ExclamationString':
-            return "[double quoted string]"
-        case '#TokenType_SingleQuotedString':
-            return "[single quoted string]"
-        case '#TokenType_TripleBackTickedString':
-            return "[triple back-ticked string]"
-        case '#TokenType_TripleDoubleQuotedString':
-            return "[triple double quoted string]"
-        case '#TokenType_TripleSingleQuotedString':
-            return "[triple single quoted string]"
+            return "[exclamation string]"
+
+        case '#TokenType_BackTick':
+            return "`"
+        case '#TokenType_DoubleQuote':
+            return '"'
+        case '#TokenType_SingleQuote':
+            return "'"
+        case '#TokenType_TripleBackTick':
+            return "```"
+        case '#TokenType_TripleDoubleQuote':
+            return '"""'
+        case '#TokenType_TripleSingleQuote':
+            return "'''"
+
+        case '#TokenType_StringFragment':
+            return "[string fragment]"
+        case '#TokenType_LeftGuillemot':
+            return "[opening guillemot]"
+        case '#TokenType_RightGuillemot':
+            return "[closing guillemot]"
 
         // Other Literals
         case '#TokenType_FloatingPointLiteral':

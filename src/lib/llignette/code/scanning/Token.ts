@@ -6,6 +6,7 @@
 //
 
 import type {TokenType} from "./TokenType";
+import {SourcePos} from "../util/SourcePos";
 
 //=====================================================================================================================
 
@@ -19,3 +20,11 @@ export type Token = {
 }
 
 //=====================================================================================================================
+
+export function getSourcePos(token: Token) {
+    return new SourcePos(token.sourceOffset,
+        token.sourceOffset + token.sourceLength)
+}
+
+//=====================================================================================================================
+

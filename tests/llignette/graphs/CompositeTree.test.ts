@@ -4,8 +4,8 @@
 //
 
 import {describe, expect, it} from "vitest";
-import {MutableCompositeTree} from "../../../src/lib/lligne/graphs/impl/MutableCompositeTree";
-import {type Keyed} from "../../../src/lib/lligne/graphs/Keyed";
+import {MutableCompositeTree} from "../../../src/lib/llignette/graphs/impl/MutableCompositeTree";
+import {type Keyed} from "../../../src/lib/llignette/graphs/Keyed";
 
 //=====================================================================================================================
 

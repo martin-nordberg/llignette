@@ -91,33 +91,44 @@ describe('Scanner test', () => {
  "start over"`,
         )
 
-        expectToken(result.tokens[0], '#TokenType_DoubleQuotedString', 0, 5)
-        expectToken(result.tokens[1], '#TokenType_DoubleQuotedString', 6, 5)
-        expectToken(result.tokens[2], '#TokenType_UnclosedString', 12, 4)
-        expectToken(result.tokens[3], '#TokenType_DoubleQuotedString', 18, 12)
-        expectToken(result.tokens[4], '#TokenType_Eof', 30, 0)
+        expectToken(result.tokens[0], '#TokenType_DoubleQuote', 0, 1)
+        expectToken(result.tokens[1], '#TokenType_StringFragment', 1, 3)
+        expectToken(result.tokens[2], '#TokenType_DoubleQuote', 4, 1)
+        expectToken(result.tokens[3], '#TokenType_DoubleQuote', 6, 1)
+        expectToken(result.tokens[4], '#TokenType_StringFragment', 7, 3)
+        expectToken(result.tokens[5], '#TokenType_DoubleQuote', 10, 1)
+        expectToken(result.tokens[6], '#TokenType_DoubleQuote', 12, 1)
+        expectToken(result.tokens[7], '#TokenType_UnclosedString', 13, 3)
+        expectToken(result.tokens[8], '#TokenType_DoubleQuote', 18, 1)
+        expectToken(result.tokens[9], '#TokenType_StringFragment', 19, 10)
+        expectToken(result.tokens[10], '#TokenType_DoubleQuote', 29, 1)
+        expectToken(result.tokens[11], '#TokenType_Eof', 30, 0)
         expect(result.newLineOffsets.length).toBe(1)
     })
 
-    it("scans a triple double quoted strings", () => {
+    it("scans a one line triple double quoted string", () => {
         const result = scan(
             `"""aaa"""`,
         )
 
-        expectToken(result.tokens[0], '#TokenType_TripleDoubleQuotedString', 0, 9)
-        expectToken(result.tokens[1], '#TokenType_Eof', 9, 0)
+        expectToken(result.tokens[0], '#TokenType_TripleDoubleQuote', 0, 3)
+        expectToken(result.tokens[1], '#TokenType_StringFragment', 3, 3)
+        expectToken(result.tokens[2], '#TokenType_TripleDoubleQuote', 6, 3)
+        expectToken(result.tokens[3], '#TokenType_Eof', 9, 0)
         expect(result.newLineOffsets.length).toBe(0)
     })
 
-    it("scans a triple double quoted strings", () => {
+    it("scans a multiline triple double quoted string", () => {
         const result = scan(
             `"""
      aaa
 """`,
         )
 
-        expectToken(result.tokens[0], '#TokenType_TripleDoubleQuotedString', 0, 16)
-        expectToken(result.tokens[1], '#TokenType_Eof', 16, 0)
+        expectToken(result.tokens[0], '#TokenType_TripleDoubleQuote', 0, 3)
+        expectToken(result.tokens[1], '#TokenType_StringFragment', 3, 10)
+        expectToken(result.tokens[2], '#TokenType_TripleDoubleQuote', 13, 3)
+        expectToken(result.tokens[3], '#TokenType_Eof', 16, 0)
         expect(result.newLineOffsets.length).toBe(2)
     })
 
@@ -127,11 +138,18 @@ describe('Scanner test', () => {
  'start over'`,
         )
 
-        expectToken(result.tokens[0], '#TokenType_SingleQuotedString', 0, 5)
-        expectToken(result.tokens[1], '#TokenType_SingleQuotedString', 6, 5)
-        expectToken(result.tokens[2], '#TokenType_UnclosedString', 12, 4)
-        expectToken(result.tokens[3], '#TokenType_SingleQuotedString', 18, 12)
-        expectToken(result.tokens[4], '#TokenType_Eof', 30, 0)
+        expectToken(result.tokens[0], '#TokenType_SingleQuote', 0, 1)
+        expectToken(result.tokens[1], '#TokenType_StringFragment', 1, 3)
+        expectToken(result.tokens[2], '#TokenType_SingleQuote', 4, 1)
+        expectToken(result.tokens[3], '#TokenType_SingleQuote', 6, 1)
+        expectToken(result.tokens[4], '#TokenType_StringFragment', 7, 3)
+        expectToken(result.tokens[5], '#TokenType_SingleQuote', 10, 1)
+        expectToken(result.tokens[6], '#TokenType_SingleQuote', 12, 1)
+        expectToken(result.tokens[7], '#TokenType_UnclosedString', 13, 3)
+        expectToken(result.tokens[8], '#TokenType_SingleQuote', 18, 1)
+        expectToken(result.tokens[9], '#TokenType_StringFragment', 19, 10)
+        expectToken(result.tokens[10], '#TokenType_SingleQuote', 29, 1)
+        expectToken(result.tokens[11], '#TokenType_Eof', 30, 0)
         expect(result.newLineOffsets.length).toBe(1)
     })
 
@@ -140,12 +158,60 @@ describe('Scanner test', () => {
             "`abc` `xyz` `bad\n `start over`",
         )
 
-        expectToken(result.tokens[0], '#TokenType_BackTickedString', 0, 5)
-        expectToken(result.tokens[1], '#TokenType_BackTickedString', 6, 5)
-        expectToken(result.tokens[2], '#TokenType_UnclosedString', 12, 4)
-        expectToken(result.tokens[3], '#TokenType_BackTickedString', 18, 12)
-        expectToken(result.tokens[4], '#TokenType_Eof', 30, 0)
+        expectToken(result.tokens[0], '#TokenType_BackTick', 0, 1)
+        expectToken(result.tokens[1], '#TokenType_StringFragment', 1, 3)
+        expectToken(result.tokens[2], '#TokenType_BackTick', 4, 1)
+        expectToken(result.tokens[3], '#TokenType_BackTick', 6, 1)
+        expectToken(result.tokens[4], '#TokenType_StringFragment', 7, 3)
+        expectToken(result.tokens[5], '#TokenType_BackTick', 10, 1)
+        expectToken(result.tokens[6], '#TokenType_BackTick', 12, 1)
+        expectToken(result.tokens[7], '#TokenType_UnclosedString', 13, 3)
+        expectToken(result.tokens[8], '#TokenType_BackTick', 18, 1)
+        expectToken(result.tokens[9], '#TokenType_StringFragment', 19, 10)
+        expectToken(result.tokens[10], '#TokenType_BackTick', 29, 1)
+        expectToken(result.tokens[11], '#TokenType_Eof', 30, 0)
         expect(result.newLineOffsets.length).toBe(1)
+    })
+
+    it("scans an interpolated back ticked string", () => {
+        const result = scan(
+            "`abc{{stuff}}`",
+        )
+
+        expectToken(result.tokens[0], '#TokenType_BackTick', 0, 1)
+        expectToken(result.tokens[1], '#TokenType_StringFragment', 1, 3)
+        expectToken(result.tokens[2], '#TokenType_LeftGuillemot', 4, 2)
+        expectToken(result.tokens[3], '#TokenType_Identifier', 6, 5)
+        expectToken(result.tokens[4], '#TokenType_RightGuillemot', 11, 2)
+        expectToken(result.tokens[5], '#TokenType_BackTick', 13, 1)
+        expectToken(result.tokens[6], '#TokenType_Eof', 14, 0)
+        expect(result.newLineOffsets.length).toBe(0)
+    })
+
+    it("scans a nested interpolated back ticked string", () => {
+        const result = scan(
+            "`abc{{funct('{{inner}}')}} then {{another}}`",
+        )
+
+        expectToken(result.tokens[0], '#TokenType_BackTick', 0, 1)
+        expectToken(result.tokens[1], '#TokenType_StringFragment', 1, 3)
+        expectToken(result.tokens[2], '#TokenType_LeftGuillemot', 4, 2)
+        expectToken(result.tokens[3], '#TokenType_Identifier', 6, 5)
+        expectToken(result.tokens[4], '#TokenType_LeftParenthesis', 11, 1)
+        expectToken(result.tokens[5], '#TokenType_SingleQuote', 12, 1)
+        expectToken(result.tokens[6], '#TokenType_LeftGuillemot', 13, 2)
+        expectToken(result.tokens[7], '#TokenType_Identifier', 15, 5)
+        expectToken(result.tokens[8], '#TokenType_RightGuillemot', 20, 2)
+        expectToken(result.tokens[9], '#TokenType_SingleQuote', 22, 1)
+        expectToken(result.tokens[10], '#TokenType_RightParenthesis', 23, 1)
+        expectToken(result.tokens[11], '#TokenType_RightGuillemot', 24, 2)
+        expectToken(result.tokens[12], '#TokenType_StringFragment', 26, 6)
+        expectToken(result.tokens[13], '#TokenType_LeftGuillemot', 32, 2)
+        expectToken(result.tokens[14], '#TokenType_Identifier', 34, 7)
+        expectToken(result.tokens[15], '#TokenType_RightGuillemot', 41, 2)
+        expectToken(result.tokens[16], '#TokenType_BackTick', 43, 1)
+        expectToken(result.tokens[17], '#TokenType_Eof', 44, 0)
+        expect(result.newLineOffsets.length).toBe(0)
     })
 
     it("scans boolean literals", () => {

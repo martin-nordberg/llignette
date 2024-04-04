@@ -59,8 +59,12 @@ aaaaaaaaaaaaaaa⁅aa⁆;T⦕aa⦖
 "Name: ⟪ employee.name ⟫"   |
 "Name: ❮ employee.name ❯"   |
 "Name: ⎣ employee.name ⎦"   |
-
-
+"Name: ╭ employee.name ╮"   |
+"Name: ╰ employee.name ╯"   |
+"Name: ┇ employee.name ┇"   |
+"Name: ┋ employee.name ┋"   |
+"Name: ┊ employee.name ┊"   |
+"Name: ╍ employee.name ╍"   |
 
                             |
 "Name: ⥼ employee.name ⥽"   |
@@ -74,9 +78,13 @@ aaaaaaaaaaaaaaa⁅aa⁆;T⦕aa⦖
                             |
 "Name: ⥌ employee.name ⥍"   |
 "Name: ⸨ employee.name ⸩"   |
+"Name: ⧼ employee.name ⧽"   |
 "Name: ｟ employee.name ｠"   |
 "Name: ⦕ employee.name ⦖"   |
 
+                            |
+"Name: ⟤ employee.name ⟥   |
+"Name: ⟥ employee.name ⟤   |
 
                             |
 "Name: 🠺 employee.name 🠸"   |
@@ -107,4 +115,6 @@ Name
 🙶🙷
 
 ⦕⦖
+⟤⟥
+⟢⟣
 

@@ -1,16 +1,31 @@
 //
-// # Data structure for tracking slices of source code.
+// # Data structure for tracking ranges of source code.
 //
 // (C) Copyright 2023-2024 Martin E. Nordberg III
 // Apache 2.0 License
 //
 
+
 //=====================================================================================================================
 
-// SourcePos represents a range of source code characters from startOffset to endOffset.
-import type {Token} from "../scanning/Token";
+/** LineAndColumn is a line number and column number (both one-based) within a source. */
+export class LineAndColumn {
 
+    readonly line: number
+    readonly column: number
+
+    constructor(line: number, column: number) {
+        this.line = line
+        this.column = column
+    }
+
+}
+
+//=====================================================================================================================
+
+/** SourcePos represents a range of source code characters from startOffset to endOffset. */
 export class SourcePos {
+
     readonly startOffset: number
     readonly endOffset: number
 
@@ -19,18 +34,12 @@ export class SourcePos {
         this.startOffset = startOffset
         this.endOffset = endOffset
     }
-
-    static fromToken(token: Token): SourcePos {
-        return new SourcePos(token.sourceOffset,
-            token.sourceOffset + token.sourceLength)
-    }
-
-    // Slices the given sourceCode to produce the string demarcated by the source position.
+    /** Slices the given sourceCode to produce the string demarcated by the source position. */
     getText(sourceCode: string): string {
         return sourceCode.substring(this.startOffset, this.endOffset)
     }
 
-    // Creates a new source position extending from the start of one to the end of another.
+    /** Creates a new source position extending from the start of one to the end of another. */
     thru(that: SourcePos): SourcePos {
 
         if (that.endOffset < this.startOffset) {
@@ -44,34 +53,39 @@ export class SourcePos {
 
     }
 
+    /** Converts a source position to line and column number. */
+    toLineAndColumn(newLineOffsets: number[]) {
+
+        // console.log(this)
+        // console.log(newLineOffsets)
+
+        let startLine = 1
+        let startColumn = this.startOffset
+        if (newLineOffsets.length > 0) {
+            let iMin = 0
+            let iMax = newLineOffsets.length
+            // console.log({iMin,iMax})
+            while (iMax - iMin > 1) {
+                const iMid = Math.floor((iMin + iMax) / 2)
+                // console.log({iMid,startOffset:this.startOffset,iMidOffset:newLineOffsets[iMid]})
+                if (this.startOffset > newLineOffsets[iMid]) {
+                    iMin = iMid
+                } else {
+                    iMax = iMid
+                }
+                // console.log({iMin,iMax})
+            }
+            startLine = iMin + 2
+            startColumn = this.startOffset - newLineOffsets[iMin]
+        }
+
+        return new LineAndColumn(
+            startLine,
+            startColumn
+        )
+
+    }
+
 }
-
-
-//=====================================================================================================================
-
-//func (t *LligneTokenOriginTracker) GetOrigin(sourcePos int) LligneOrigin {
-//
-//	priorNewLinePos := 0
-//	if len(t.newLinePositions) > 0 {
-//		iMin := 0
-//		iMax := len(t.newLinePositions)
-//		for iMax-iMin > 1 {
-//			iMid := (iMin + iMax) / 2
-//			if sourcePos > t.newLinePositions[iMid] {
-//				iMin = iMid
-//			} else {
-//				iMax = iMid
-//			}
-//		}
-//		priorNewLinePos = iMin
-//	}
-//
-//	return LligneOrigin{
-//		FileName: t.fileName,
-//		Line:     priorNewLinePos + 1,
-//		Column:   sourcePos - t.newLinePositions[priorNewLinePos],
-//	}
-//
-//}
 
 //=====================================================================================================================
