@@ -17,7 +17,7 @@ import type {
     UnaryOperationExpr,
     UnaryOperationExprTag
 } from "./Model";
-import {isIdentifier, isRecord, type StringLiteral, type StringLiteralTag} from "./Model";
+import {isRecord, type StringLiteral, type StringLiteralTag} from "./Model";
 import type {Token} from "../scanning/Token";
 import {getSourcePos} from "../scanning/Token";
 import {SourcePos} from "../util/SourcePos";
@@ -200,6 +200,10 @@ class Parser {
      * Looks ahead to see if upcoming tokens are the start of a field.
      */
     #lookAheadIsField(): boolean {
+        if (this.tokensIndex > 0 && this.tokens[this.tokensIndex-1].tokenType == '#TokenType_DotDotDot') {
+            return false
+        }
+
         if (this.tokens[this.tokensIndex].tokenType == '#TokenType_Identifier') {
             return this.#isTokenAfterRecordFieldName(this.tokens[this.tokensIndex + 1].tokenType)
         }
@@ -763,11 +767,6 @@ class Parser {
         // Parse the expression inside the parentheses.
         const operand = this.parseExprWithBindingPower(0)
 
-        // Handle an interpolated field name.
-        if (isIdentifier(operand) && this.#isTokenAfterRecordFieldName(this.tokens[this.tokensIndex + 1].tokenType)) {
-
-        }
-
         if (this.tokens[this.tokensIndex].tokenType != '#TokenType_RightParenthesis') {
             this.#addError("Expected " + '#TokenType_RightParenthesis')
         }
@@ -827,7 +826,21 @@ class Parser {
 
             case '#TokenType_LeftParenthesis':
                 const sourcePos = getSourcePos(opToken)
+
+                const hasSpreadArgument = this.tokens[this.tokensIndex].tokenType == '#TokenType_DotDotDot'
+                if (hasSpreadArgument) {
+                    this.tokensIndex += 1
+                }
+
                 const rightOperand = this.#parseParenthesizedExpression(sourcePos)
+
+                if (hasSpreadArgument && rightOperand.tag != '#Model_ParenthesizedExpr') {
+                    this.#addErrorAtPos(
+                        "Spread operator applies only for a simple expression.",
+                        sourcePos.thru(rightOperand.sourcePos)
+                    )
+                }
+
                 return {
                     key: Symbol(),
                     tag: '#Model_FunctionCallExpr',

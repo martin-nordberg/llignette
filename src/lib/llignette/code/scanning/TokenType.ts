@@ -27,6 +27,7 @@ export type TokenType =
     | '#TokenType_DashArrow'
     | '#TokenType_Dot'
     | '#TokenType_DotDot'
+    | '#TokenType_DotDotDot'
     | '#TokenType_Equals'
     | '#TokenType_EqualsArrow'
     | '#TokenType_EqualsEquals'
@@ -150,6 +151,8 @@ export function textOfTokenType(tt: TokenType): string {
             return "."
         case '#TokenType_DotDot':
             return ".."
+        case '#TokenType_DotDotDot':
+            return "..."
         case '#TokenType_Equals':
             return "="
         case '#TokenType_EqualsArrow':

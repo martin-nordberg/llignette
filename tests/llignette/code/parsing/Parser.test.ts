@@ -157,6 +157,9 @@ describe('Simple Parsing Tests', () => {
         check("y = f(5+7)")
         check("y = s.length()")
         check("y = a.append(x)")
+        check("y = a.append((x))")
+        check("y = a.append(...x)")
+        check("y = a.append(...f(x+7))")
     })
 
     it("parses array indexing", () => {

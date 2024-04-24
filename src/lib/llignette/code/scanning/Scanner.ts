@@ -215,7 +215,7 @@ class Scanner {
             case '-':
                 return this.#oneOrTwoCharToken('#TokenType_Dash', '>', '#TokenType_DashArrow')
             case '.':
-                return this.#oneOrTwoCharToken('#TokenType_Dot', '.', '#TokenType_DotDot')
+                return this.#oneToThreeCharToken('#TokenType_Dot', '.', '#TokenType_DotDot', '.', '#TokenType_DotDotDot')
             case '=':
                 return this.#scanAfterEquals()
             case '!':
