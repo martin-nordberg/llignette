@@ -1,0 +1,14 @@
+
+! - TBD
+@ - annotations
+# - tags
+% - string formatting
+^ - metaprogramming
+& - unification / conjunction
+| - unification / disjunction
+~ - typestate
+$ - streams / observables
+&,| - type unification
+; - TBD
+: - qualification
+? - Optional, default

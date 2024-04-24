@@ -6,6 +6,8 @@ import srcFactorial from '../../../samples/rosettacode/Factorial.llignette?raw'
 import srcFibonacci from '../../../samples/rosettacode/Fibonacci.llignette?raw'
 import srcFizzBuzz from '../../../samples/rosettacode/FizzBuzz.llignette?raw'
 import srcOptional from '../../../samples/llignette/lang/Optional.llignette?raw'
+import srcLineSegment from '../../../samples/geometry/LineSegment.llignette?raw'
+import srcPoint from '../../../samples/geometry/Point.llignette?raw'
 
 // x
 describe('Parsing Samples', () => {
@@ -13,9 +15,9 @@ describe('Parsing Samples', () => {
     const check = function (sourceCode: string) {
         let scanResult = scan(sourceCode)
 
-        const parseResult = parseModule(scanResult)
+        const module = parseModule(scanResult)
 
-        expect(parseResult.module.sourcePos.getText(sourceCode).length).toBeGreaterThan(0)
+        expect(module.sourcePos.getText(sourceCode).length).toBeGreaterThan(0)
     }
 
     it("parses the code for Factorial", () => {
@@ -32,6 +34,14 @@ describe('Parsing Samples', () => {
 
     it("parses the code for Optional", () => {
         check(srcOptional)
+    })
+
+    it("parses the code for LineSegment", () => {
+        check(srcLineSegment)
+    })
+
+    it("parses the code for Point", () => {
+        check(srcPoint)
     })
 
 });

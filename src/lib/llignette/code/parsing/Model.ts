@@ -10,11 +10,28 @@ import type {Optional} from "../../util/Optional";
 //=====================================================================================================================
 
 /**
+ * Any model element deriving from source code.
+ */
+export type Sourced = Keyed & {
+    readonly sourcePos: SourcePos,
+}
+
+//=====================================================================================================================
+
+/**
+ * An "absent" (not applicable) field in code generation.
+ */
+export type Absent = Sourced & {
+    readonly tag: '#Model_Absent'
+}
+
+//=====================================================================================================================
+
+/**
  * An array indexing expression (postfix '[expr]').
  */
-export type ArrayIndexing = Keyed & {
+export type ArrayIndexing = Sourced & {
     readonly tag: '#Model_ArrayIndexing',
-    readonly sourcePos: SourcePos,
     readonly baseExpression: Model,
     readonly index: Model
 }
@@ -24,9 +41,8 @@ export type ArrayIndexing = Keyed & {
 /**
  * A single integer literal.
  */
-export type ArrayLiteral = Keyed & {
+export type ArrayLiteral = Sourced & {
     readonly tag: '#Model_ArrayLiteral',
-    readonly sourcePos: SourcePos,
     readonly elements: Model[]
 }
 
@@ -35,9 +51,8 @@ export type ArrayLiteral = Keyed & {
 /**
  * An array type (postfix '[]').
  */
-export type ArrayType = Keyed & {
+export type ArrayType = Sourced & {
     readonly tag: '#Model_ArrayType',
-    readonly sourcePos: SourcePos,
     readonly baseType: Model
 }
 
@@ -70,6 +85,7 @@ let binaryOperationExprTagObj = {
     '#Model_NotEqualsExpr': "!=",
     '#Model_RangeExpr': "..",
     '#Model_SubtractionExpr': "-",
+    '#Model_SubtypeExpr': "<:",
     '#Model_TypeState': "~",
     '#Model_TypeStateChange': "~=",
     '#Model_TypeStateEffect': "~>",
@@ -82,9 +98,8 @@ export type BinaryOperationExprTag = keyof typeof binaryOperationExprTagObj
 
 let binaryOperationExprTagSet = new Set(Object.keys(binaryOperationExprTagObj))
 
-export type BinaryOperationExpr = Keyed & {
+export type BinaryOperationExpr = Sourced & {
     readonly tag: BinaryOperationExprTag,
-    readonly sourcePos: SourcePos,
     readonly leftOperand: Model,
     readonly rightOperand: Model
 }
@@ -98,9 +113,8 @@ export function isBinaryOperationExpr(expr: Model): expr is BinaryOperationExpr 
 /**
  * A boolean literal expression.
  */
-export type BooleanLiteral = Keyed & {
+export type BooleanLiteral = Sourced & {
     readonly tag: '#Model_Literal_Boolean',
-    readonly sourcePos: SourcePos,
     readonly value: boolean
 }
 
@@ -122,9 +136,8 @@ type BuiltInTypeTag = keyof typeof builtInTypeTagObj
 
 let builtInTypeTagSet = new Set(Object.keys(builtInTypeTagObj))
 
-export type BuiltInType = Keyed & {
+export type BuiltInType = Sourced & {
     readonly tag: BuiltInTypeTag,
-    readonly sourcePos: SourcePos
 }
 
 export function isBuiltInTypeExpr(expr: Model): expr is BuiltInType {
@@ -136,9 +149,8 @@ export function isBuiltInTypeExpr(expr: Model): expr is BuiltInType {
 /**
  * An empty expression, generally the inside of "()".
  */
-export type EmptyExpr = Keyed & {
-    readonly tag: '#Model_EmptyExpr',
-    readonly sourcePos: SourcePos
+export type EmptyExpr = Sourced & {
+    readonly tag: '#Model_EmptyExpr'
 }
 
 //=====================================================================================================================
@@ -146,9 +158,8 @@ export type EmptyExpr = Keyed & {
 /**
  * A single floating point literal.
  */
-export type Float64Literal = Keyed & {
+export type Float64Literal = Sourced & {
     readonly tag: '#Model_Literal_Float64',
-    readonly sourcePos: SourcePos,
     readonly value: number
 }
 
@@ -157,9 +168,8 @@ export type Float64Literal = Keyed & {
 /**
  * A function declaration.
  */
-export type FunctionDeclaration = Keyed & {
+export type FunctionDeclaration = Sourced & {
     readonly tag: '#Model_FunctionDeclaration',
-    readonly sourcePos: SourcePos,
     readonly argumentRecord: Record,
     readonly returnType: Optional<Model>
     readonly body: Model
@@ -168,12 +178,39 @@ export type FunctionDeclaration = Keyed & {
 //=====================================================================================================================
 
 /**
- * A single identifier.
+ * A generator declaration.
  */
-export type Identifier = Keyed & {
+export type GeneratorDeclaration = Sourced & {
+    readonly tag: '#Model_GeneratorDeclaration',
+    readonly argumentRecord: Record,
+    readonly returnType: Optional<Model>
+    readonly body: Model
+}
+
+//=====================================================================================================================
+
+/**
+ * An ordinary identifier.
+ */
+export type NamedIdentifier = Sourced & {
     readonly tag: '#Model_Identifier',
-    readonly sourcePos: SourcePos,
     readonly name: string
+}
+
+/**
+ * A mustache-enclosed expression evaluating to an identifier.
+ */
+export type InterpolatedIdentifier = Sourced & {
+    readonly tag: '#Model_InterpolatedIdentifier',
+    readonly expression: Model
+}
+
+export type Identifier =
+    | NamedIdentifier
+    | InterpolatedIdentifier
+
+export function isIdentifier(expr: Model): expr is Identifier {
+    return expr.tag == '#Model_Identifier' || expr.tag == '#Model_InterpolatedIdentifier'
 }
 
 //=====================================================================================================================
@@ -181,17 +218,18 @@ export type Identifier = Keyed & {
 /**
  * A single integer literal.
  */
-export type Int64Literal = Keyed & {
+export type Int64Literal = Sourced & {
     readonly tag: '#Model_Literal_Int64',
-    readonly sourcePos: SourcePos,
     readonly value: number
 }
 
 //=====================================================================================================================
 
-export type StringFragment = Keyed & {
+/**
+ * A literal fragment within an interpolated string.
+ */
+export type StringFragment = Sourced & {
     readonly tag: '#Model_Literal_StringFragment',
-    readonly sourcePos: SourcePos,
     readonly value: string
 }
 
@@ -214,9 +252,8 @@ export type StringLiteralTag = keyof typeof stringLiteralTagObj
 
 let stringLiteralTagSet = new Set(Object.keys(stringLiteralTagObj))
 
-export type StringLiteral = Keyed & {
+export type StringLiteral = Sourced & {
     readonly tag: StringLiteralTag,
-    readonly sourcePos: SourcePos,
     readonly fragments: Model[]
 }
 
@@ -241,9 +278,8 @@ export type TypeConstraintTag = keyof typeof typeConstraintTagObj
 
 let typeConstraintTagSet = new Set(Object.keys(typeConstraintTagObj))
 
-export type TypeConstraint = Keyed & {
+export type TypeConstraint = Sourced & {
     readonly tag: TypeConstraintTag,
-    readonly sourcePos: SourcePos,
     readonly operand: Model
 }
 
@@ -259,6 +295,7 @@ export function isTypeConstraint(expr: Model): expr is TypeConstraint {
 let unaryOperationExprTagObj = {
     '#Model_AnnotationExpr': "@",
     '#Model_LogicalNotExpr': "not",
+    '#Model_MetaExpr': "^",
     '#Model_NegationExpr': "-",
     '#Model_OptionalExpr': "?",
     '#Model_OtherwiseExpr': "otherwise",
@@ -270,9 +307,8 @@ export type UnaryOperationExprTag = keyof typeof unaryOperationExprTagObj
 
 let unaryOperationExprTagSet = new Set(Object.keys(unaryOperationExprTagObj))
 
-export type UnaryOperationExpr = Keyed & {
+export type UnaryOperationExpr = Sourced & {
     readonly tag: UnaryOperationExprTag,
-    readonly sourcePos: SourcePos,
     readonly operand: Model
 }
 
@@ -284,54 +320,54 @@ export function isUnaryOperationExpr(expr: Model): expr is UnaryOperationExpr {
 //=====================================================================================================================
 
 export type FieldValueType =
+    | '#FieldValue_Alias'
     | '#FieldValue_Default'
     | '#FieldValue_Fixed'
-    | '#FieldValue_Partial'
     | '#FieldValue_None'
+    | '#FieldValue_Partial'
     | '#FieldValue_StateChange'
+
+export type FieldPurpose =
+    | '#FieldPurpose_Result'
+    | '#FieldPurpose_Temporary'
+    | '#FieldPurpose_Verification'
 
 /**
  * A field within a structure.
  */
-export type Field = Keyed & {
+export type Field = Sourced & {
     readonly tag: '#Model_Field',
-    readonly sourcePos: SourcePos,
     readonly fieldName: Identifier,
     readonly documentation: Optional<StringLiteral>,
     readonly typeExpr: Optional<Model>,
+    readonly metaTypeExpr: Optional<Model>,
     readonly valueExpr: Optional<Model>,
-    readonly valueType: FieldValueType
+    readonly valueType: FieldValueType,
+    readonly purpose: FieldPurpose
 }
 
 //=====================================================================================================================
 
 /**
- * A record value injected into a larger record using '...'.
+ * A structure is a set of fields.
  */
-export type InjectedRecord = Keyed & {
-    readonly tag: '#Model_InjectedRecord',
-    readonly sourcePos: SourcePos,
-    readonly injectedValue: Model,
-}
-
-//=====================================================================================================================
-
-export type RecordEntry = Field | InjectedRecord
-
-//=====================================================================================================================
-
-/**
- * A structure is a set of fields or injected records.
- */
-export type Structure = Keyed & {
-    readonly sourcePos: SourcePos,
-    readonly entries: RecordEntry[]
+export type Structure = Sourced & {
+    readonly fields: Field[]
 }
 
 //=====================================================================================================================
 
 export type Module = Structure & {
-    readonly tag: '#Model_Module'
+    readonly tag: '#Model_Module',
+
+    // TODO: Source file name
+
+    /** The original source code. */
+    readonly sourceCode: string,
+
+    /** Offsets of new line characters in the source code. */
+    readonly newLineOffsets: number[],
+
 }
 
 //=====================================================================================================================
@@ -351,6 +387,7 @@ export function isRecord(expr: Model): expr is Record {
  * Llignette model nodes.
  */
 export type Model =
+    | Absent
     | ArrayIndexing
     | ArrayLiteral
     | ArrayType
@@ -360,6 +397,7 @@ export type Model =
     | EmptyExpr
     | Float64Literal
     | FunctionDeclaration
+    | GeneratorDeclaration
     | Identifier
     | Int64Literal
     | Record
@@ -374,7 +412,7 @@ export type ModelTag = Model["tag"]
 
 //=====================================================================================================================
 
-export type TopLevel = {
+export type TopLevel = Keyed & {
     readonly modules: Module[]
 }
 

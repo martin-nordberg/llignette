@@ -1,17 +1,19 @@
 fb: Package = (
 
     fizzBuzz1 :: "Using modulo arithmetic on each value",
-    fizzBuzz1 = fn(count: Int64) -> String => o(
-        o = _items_.join('\n')
-        _items_ = map(
+    fizzBuzz1 = fn(count: Int64) -> String => (
+        o = items.join('\n')
+      where
+        items = map(
             collection = 1..count,
             mapping = fn(i:Int64) -> String => (
-                o = "FizzBuzz" when _isFizz_ and _isBuzz_,
-                o = "Fizz" when _isFizz_ and not _isBuzz_,
-                o = "Buzz" when not _isFizz_ and _isBuzz_,
-                o = "{{i}}" otherwise,
-                _isFizz_ = i mod 3 == 0,
-                _isBuzz_ = i mod 5 == 0
+                o = "FizzBuzz" when isFizz and isBuzz,
+                o = "Fizz" when isFizz and not isBuzz,
+                o = "Buzz" when not isFizz and isBuzz,
+                o = "{{i}}" otherwise
+              where
+                isFizz = i mod 3 == 0,
+                isBuzz = i mod 5 == 0
             )
         )
     )
@@ -19,24 +21,24 @@ fb: Package = (
 
     fizzBuzz2 :: "Using step-as-you-go logic #2, immutable values"
     fizzBuzz2 = fn(count: Int64) -> String => (
-        o = _result_.answer
-
-        _Result_: Type = (
+        o = result.answer
+      where
+        Result: Type = (
             answer: String,
             nextMultipleOf3,
             nextMultipleOf5,
             nextMultipleOf15,
         )
 
-        _start_: Result = (
+        start: Result = (
             answer = "",
             nextMultipleOf3 = 3,
             nextMultipleOf5 = 5,
             nextMultipleOf15 = 15,
         )
 
-        _result_ = reduce(
-            startingValue = _start_,
+        result = reduce(
+            startingValue = start,
             collection = 1..count,
             accumulator = fn(prior: Result, i: Int64) => (
                 o = (

@@ -1,2 +1,2 @@
 # llignette-ide
-The experimental programming language Llignette
+Llignette is an experimental record-oriented programming language.

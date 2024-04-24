@@ -1,0 +1,34 @@
+
+geometry &= (
+
+    Point = gen(units: Units & .dimension == 'length') => (
+
+        T = (
+            x: Float64 & units,
+            y: Float64 & units
+        )
+
+    )
+
+)
+
+
+mypackage &= (
+
+    MmPoint = geometry.Point(units('mm'))
+
+)
+
+
+myotherpackage &= (
+
+    f = fn(x: Float64 & units('mm'), power: Float64) -> MmPoint.T => (
+        x,
+        y = x ** power
+    )
+
+  where
+
+    MmPoint = geometry.Point(units('mm'))
+
+)

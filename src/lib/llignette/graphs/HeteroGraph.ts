@@ -6,45 +6,11 @@
 import {type Keyed} from "./Keyed";
 import {type Optional} from "../util/Optional";
 import {type HeteroEdge} from "./Edges";
-import {type Subscription} from "rxjs";
+import {type Observer, type Subscription} from "rxjs";
 
 //=====================================================================================================================
 
-/** Not sure why this rxjs type is internal. */
-export interface Observer<T> {
-    /**
-     * A callback function that gets called by the producer during the subscription when
-     * the producer "has" the `value`. It won't be called if `error` or `complete` callback
-     * functions have been called, nor after the consumer has unsubscribed.
-     */
-    next: (value: T) => void;
-
-    /**
-     * A callback function that gets called by the producer if and when it encountered a
-     * problem of any kind. The errored value will be provided through the `err` parameter.
-     * This callback can't be called more than one time, it can't be called if the
-     * `complete` callback function have been called previously, nor it can't be called if
-     * the consumer has unsubscribed.
-     */
-    error: (err: any) => void;
-
-    /**
-     * A callback function that gets called by the producer if and when it has no more
-     * values to provide (by calling `next` callback function). This means that no error
-     * has happened. This callback can't be called more than one time, it can't be called
-     * if the `error` callback function have been called previously, nor it can't be called
-     * if the consumer has unsubscribed.
-     */
-    complete: () => void;
-}
-
-//=====================================================================================================================
-
-export interface FilterableHeadVertexTraversal<TailVertex extends Keyed, HeadVertex extends Keyed, EdgeProperties> {
-
-    and(): HeadVertexTraversal<TailVertex, HeadVertex, EdgeProperties>
-
-    or(): HeadVertexTraversal<TailVertex, HeadVertex, EdgeProperties>
+export interface SubscribableHeadVertexTraversal<TailVertex extends Keyed, HeadVertex extends Keyed, EdgeProperties> {
 
     subscribe(observer: Partial<Observer<HeadVertex>> | ((value: HeadVertex) => void)): Subscription
 
@@ -52,11 +18,7 @@ export interface FilterableHeadVertexTraversal<TailVertex extends Keyed, HeadVer
 
 //=====================================================================================================================
 
-export interface FilterableHeteroEdgeTraversal<TailVertex extends Keyed, HeadVertex extends Keyed, EdgeProperties> {
-
-    and(): HeteroEdgeTraversal<TailVertex, HeadVertex, EdgeProperties>
-
-    or(): HeteroEdgeTraversal<TailVertex, HeadVertex, EdgeProperties>
+export interface SubscribableHeteroEdgeTraversal<TailVertex extends Keyed, HeadVertex extends Keyed, EdgeProperties> {
 
     subscribe(observer: Partial<Observer<HeteroEdge<TailVertex, HeadVertex, EdgeProperties>>> |
         ((value: HeteroEdge<TailVertex, HeadVertex, EdgeProperties>) => void)): Subscription
@@ -65,11 +27,7 @@ export interface FilterableHeteroEdgeTraversal<TailVertex extends Keyed, HeadVer
 
 //=====================================================================================================================
 
-export interface FilterableTailVertexTraversal<TailVertex extends Keyed, HeadVertex extends Keyed, EdgeProperties> {
-
-    and(): TailVertexTraversal<TailVertex, HeadVertex, EdgeProperties>
-
-    or(): TailVertexTraversal<TailVertex, HeadVertex, EdgeProperties>
+export interface SubscribableTailVertexTraversal<TailVertex extends Keyed, HeadVertex extends Keyed, EdgeProperties> {
 
     subscribe(observer: Partial<Observer<TailVertex>> | ((value: TailVertex) => void)): Subscription
 
@@ -77,8 +35,41 @@ export interface FilterableTailVertexTraversal<TailVertex extends Keyed, HeadVer
 
 //=====================================================================================================================
 
+export interface FilterableHeadVertexTraversal<TailVertex extends Keyed, HeadVertex extends Keyed, EdgeProperties>
+    extends SubscribableHeadVertexTraversal<TailVertex, HeadVertex, EdgeProperties> {
+
+    and(): HeadVertexTraversal<TailVertex, HeadVertex, EdgeProperties>
+
+    or(): HeadVertexTraversal<TailVertex, HeadVertex, EdgeProperties>
+
+}
+
+//=====================================================================================================================
+
+export interface FilterableHeteroEdgeTraversal<TailVertex extends Keyed, HeadVertex extends Keyed, EdgeProperties>
+    extends SubscribableHeteroEdgeTraversal<TailVertex , HeadVertex , EdgeProperties> {
+
+    and(): HeteroEdgeTraversal<TailVertex, HeadVertex, EdgeProperties>
+
+    or(): HeteroEdgeTraversal<TailVertex, HeadVertex, EdgeProperties>
+
+}
+
+//=====================================================================================================================
+
+export interface FilterableTailVertexTraversal<TailVertex extends Keyed, HeadVertex extends Keyed, EdgeProperties>
+    extends SubscribableTailVertexTraversal<TailVertex, HeadVertex, EdgeProperties>{
+
+    and(): TailVertexTraversal<TailVertex, HeadVertex, EdgeProperties>
+
+    or(): TailVertexTraversal<TailVertex, HeadVertex, EdgeProperties>
+
+}
+
+//=====================================================================================================================
+
 export interface HeadVertexTraversal<TailVertex extends Keyed, HeadVertex extends Keyed, EdgeProperties>
-    extends FilterableHeadVertexTraversal<TailVertex, HeadVertex, EdgeProperties> {
+    extends SubscribableHeadVertexTraversal<TailVertex, HeadVertex, EdgeProperties> {
 
     joinedFromVertex(
         vertex: TailVertex
@@ -105,7 +96,7 @@ export interface HeadVertexTraversal<TailVertex extends Keyed, HeadVertex extend
 //=====================================================================================================================
 
 export interface HeteroEdgeTraversal<TailVertex extends Keyed, HeadVertex extends Keyed, EdgeProperties>
-    extends FilterableHeteroEdgeTraversal<TailVertex, HeadVertex, EdgeProperties> {
+    extends SubscribableHeteroEdgeTraversal<TailVertex, HeadVertex, EdgeProperties> {
 
     connecting(
         tailVertex: TailVertex,
@@ -149,7 +140,7 @@ export interface HeteroEdgeTraversal<TailVertex extends Keyed, HeadVertex extend
 //=====================================================================================================================
 
 export interface TailVertexTraversal<TailVertex extends Keyed, HeadVertex extends Keyed, EdgeProperties>
-    extends FilterableTailVertexTraversal<TailVertex, HeadVertex, EdgeProperties> {
+    extends SubscribableTailVertexTraversal<TailVertex, HeadVertex, EdgeProperties> {
 
     joinedToVertex(
         vertex: HeadVertex
@@ -184,64 +175,11 @@ export interface HeteroGraph<TailVertex extends Keyed, HeadVertex extends Keyed,
      * Begins an algorithm to be applied to a subsequently specified set of edges within the graph.
      *
      * @example
-     *  graph.forEachEdge()
+     *  graph.edges()
      *       .outFromVertex(myVertex)
-     *       .subscribe(v => console.log(v.name))
+     *       .subscribe({next: }v => console.log(v.name)})
      */
-    forEachEdge(): HeteroEdgeTraversal<TailVertex, HeadVertex, EdgeProperties>
-
-    /**
-     * Begins an algorithm to be applied to a subsequently specified set of head vertices within the graph.
-     *
-     * @example
-     *  graph.forEachHeadVertex()
-     *       .matching(v => v.tag == '#MyTag')
-     *       .subscribe( v => {
-     *           // stuff
-     *       })
-     */
-    forEachHeadVertex(): HeadVertexTraversal<TailVertex, HeadVertex, EdgeProperties>
-
-    /**
-     * Calls the given call back for each edge coming into the given head vertex.
-     * @param callback the function to call with each such edge
-     * @return a function that will apply the callback to each incoming edge for a given head vertex
-     */
-    forEachIncomingEdge(
-        callback: (edge: HeteroEdge<TailVertex, HeadVertex, EdgeProperties>) => void
-    ): (vertex: HeadVertex) => void
-
-    /**
-     * Calls the given call back for each adjacent tail vertex with an edge coming into the given vertex.
-     * @param callback the function to call with each such edge
-     * @return a function that will apply the callback to each adjacent tail vertex with an edge coming into a given vertex
-     */
-    forEachInJoinedVertex(
-        callback: (vertex: TailVertex) => void
-    ): (vertex: HeadVertex) => void
-
-    /**
-     * Calls the given call back for each edge going out of the given tail vertex.
-     * @param callback the function to call with each such edge
-     * @return a function that will apply the callback to each outgoing edge of a given vertex
-     */
-    forEachOutgoingEdge(
-        callback: (edge: HeteroEdge<TailVertex, HeadVertex, EdgeProperties>) => void
-    ): (vertex: TailVertex) => void
-
-    /**
-     * Calls the given call back for each adjacent vertex joined by an edge going out of the given vertex.
-     * @param callback the function to call with each such edge
-     * @return a function that will apply the callback to each adjacent head vertex with an edge going out from a given vertex
-     */
-    forEachOutJoinedVertex(
-        callback: (vertex: HeadVertex) => void
-    ): (vertex: TailVertex) => void
-
-    /**
-     * Begins an algorithm to be applied to a subsequently specified set of tail vertices within the graph.
-     */
-    forEachTailVertex(): TailVertexTraversal<TailVertex, HeadVertex, EdgeProperties>
+    edges(): HeteroEdgeTraversal<TailVertex, HeadVertex, EdgeProperties>
 
     /**
      * Tests whether a given edge belongs to this graph.
@@ -266,6 +204,18 @@ export interface HeteroGraph<TailVertex extends Keyed, HeadVertex extends Keyed,
      * @param key the unique key of a vertex to find
      */
     headVertexWithKey(key: symbol): Optional<HeadVertex>
+
+    /**
+     * Begins an algorithm to be applied to a subsequently specified set of head vertices within the graph.
+     *
+     * @example
+     *  graph.headVertices()
+     *       .matching(v => v.tag == '#MyTag')
+     *       .subscribe({next: v => {
+     *           // stuff
+     *       }})
+     */
+    headVertices(): HeadVertexTraversal<TailVertex, HeadVertex, EdgeProperties>
 
     /**
      * The number of edges coming in to the given head vertex.
@@ -294,6 +244,11 @@ export interface HeteroGraph<TailVertex extends Keyed, HeadVertex extends Keyed,
      * @param key the unique key of a vertex to find
      */
     tailVertexWithKey(key: symbol): Optional<TailVertex>
+
+    /**
+     * Begins an algorithm to be applied to a subsequently specified set of tail vertices within the graph.
+     */
+    tailVertices(): TailVertexTraversal<TailVertex, HeadVertex, EdgeProperties>
 
 }
 

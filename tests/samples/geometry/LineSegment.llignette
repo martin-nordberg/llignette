@@ -1,0 +1,72 @@
+
+geometry &= (
+
+    LineSegment = gen(units: Units & .dimension == dim('length')) => (
+
+        T
+            ^: TYPE
+            :: "A line segment connects any two distinct points A and B in the x-y plane." = (
+                a_x: Float64 & units,
+                a_y: Float64 & units,
+                b_x: Float64 & units,
+                b_y: Float64 & units
+            ) && a_x != b_x | a_y != b_y
+
+        equals
+            ^: FUNCTION
+            :: """
+               Determines whether two line segments are the same. Note that line segments
+               are considered the same even if their endpoints A and B are reversed.
+               """ =
+            fn(self: T, other: T) -> Boolean =>
+               (self.a_x == other.a_x and self.b_x == other.b_x and self.a_y == other.a_y and self.b_y == other.b_y) or
+               (self.a_x == other.b_x and self.b_x == other.a_x and self.a_y == other.b_y and self.b_y == other.a_y)
+
+        intersects
+            ^: FUNCTION
+            :: "Determines whether two line segments intersect." =
+            fn(self: T, other: T) -> Boolean => (
+                o = false when d == 0
+                o = 0 <= td and td <= d and 0 <= ud and ud <= d when d != 0
+              where
+                d = (self.a_x - self.b_x) * (other.a_y - other.b_y) -
+                    (self.a_y - self.b_y) * (other.a_x - other.b_x)
+
+                td = (self.a_x - other.a_x) * (other.a_y - other.b_y) -
+                     (self.a_y - other.a_y) * (other.a_x - other.b_x)
+
+                ud = (self.a_x - self.b_x) * (self.a_y - other.a_y) -
+                     (self.a_y - self.b_y) * (self.a_x - other.a_x)
+            )
+
+        length
+            ^: FUNCTION
+            :: "Returns the length of a line segment." =
+            fn(self: T) -> Float & >0.0 => (
+                o = sqrt(delta_x * delta_x + delta_y * delta_y)
+              where
+                delta_x = self.b_x - self.a_x
+                delta_y = self.b_y - self.a_y
+            )
+
+        withEndPoints
+            ^: FUNCTION
+            :: "Constructs a line segment from its end points."
+            = fn(a: Point.T, b: Point.T) -> T => (
+                a_x = a.x
+                a_y = a.y
+                b_x = b.x
+                b_y = b.y
+            )
+
+      verify
+
+        `Two short crossing line segments intersect.` =
+        assert(
+            condition = (a_x=0, a_y=0, b_x=1, b_y=1).intersects((a_x=1, a_y=0, b_x=0, b_y=1)),
+            message = "Intersection failed"
+        )
+
+    )
+
+)

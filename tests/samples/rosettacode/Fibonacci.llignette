@@ -5,7 +5,7 @@ fib: Package = (
 
     fibonacci = fn(n: NaturalInt64) -> NaturalInt64 => (
         o = n when n <= 1
-        o = fibonacci(n - 1) + fibonacci(n - 2) when n > 1
+        o = fibonacci(n = n - 1) + fibonacci(n = n - 2) when n > 1
     )
 
 )

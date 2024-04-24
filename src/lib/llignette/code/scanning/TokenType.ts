@@ -18,6 +18,8 @@ export type TokenType =
     | '#TokenType_Asterisk'
     | '#TokenType_AsteriskAsterisk'
     | '#TokenType_AtSign'
+    | '#TokenType_Caret'
+    | '#TokenType_CaretColon'
     | '#TokenType_Colon'
     | '#TokenType_ColonColon'
     | '#TokenType_Comma'
@@ -25,10 +27,10 @@ export type TokenType =
     | '#TokenType_DashArrow'
     | '#TokenType_Dot'
     | '#TokenType_DotDot'
-    | '#TokenType_DotDotDot'
     | '#TokenType_Equals'
     | '#TokenType_EqualsArrow'
     | '#TokenType_EqualsEquals'
+    | '#TokenType_EqualsColonEquals'
     | '#TokenType_EqualsEqualsEquals'
     | '#TokenType_Exclamation'
     | '#TokenType_ExclamationEquals'
@@ -37,8 +39,10 @@ export type TokenType =
     | '#TokenType_Hash'
     | '#TokenType_LeftBrace'
     | '#TokenType_LeftBracket'
+    | '#TokenType_LeftMustache'
     | '#TokenType_LeftParenthesis'
     | '#TokenType_LessThan'
+    | '#TokenType_LessThanColon'
     | '#TokenType_LessThanOrEquals'
     | '#TokenType_Plus'
     | '#TokenType_Question'
@@ -47,6 +51,7 @@ export type TokenType =
     | '#TokenType_QuestionQuestionEquals'
     | '#TokenType_RightBrace'
     | '#TokenType_RightBracket'
+    | '#TokenType_RightMustache'
     | '#TokenType_RightParenthesis'
     | '#TokenType_Semicolon'
     | '#TokenType_Slash'
@@ -56,12 +61,14 @@ export type TokenType =
     | '#TokenType_VerticalBar'
 
     // Keywords
+    | '#TokenType_Absent'
     | '#TokenType_And'
     | '#TokenType_As'
     | '#TokenType_Boolean'
     | '#TokenType_False'
     | '#TokenType_Float64'
     | '#TokenType_Fn'
+    | '#TokenType_Gen'
     | '#TokenType_In'
     | '#TokenType_Int64'
     | '#TokenType_Is'
@@ -71,31 +78,32 @@ export type TokenType =
     | '#TokenType_Otherwise'
     | '#TokenType_String'
     | '#TokenType_True'
+    | '#TokenType_Verify'
     | '#TokenType_When'
+    | '#TokenType_Where'
     | '#TokenType_Xor'
 
     // String Literals
     | '#TokenType_ExclamationString'
 
-    | '#TokenType_BackTick'
     | '#TokenType_DoubleQuote'
     | '#TokenType_SingleQuote'
-    | '#TokenType_TripleBackTick'
     | '#TokenType_TripleDoubleQuote'
     | '#TokenType_TripleSingleQuote'
 
     | '#TokenType_StringFragment'
-    | '#TokenType_LeftGuillemot'
-    | '#TokenType_RightGuillemot'
 
     // Other Literals
     | '#TokenType_FloatingPointLiteral'
     | '#TokenType_IntegerLiteral'
 
     // Identifiers
+    | '#TokenType_BackTickedIdentifier'
     | '#TokenType_Identifier'
 
     // Errors
+    | '#TokenType_EmptyBackTickedIdentifier'
+    | '#TokenType_UnclosedBackTickedIdentifier'
     | '#TokenType_UnclosedString'
     | '#TokenType_UnrecognizedChar'
 
@@ -124,6 +132,10 @@ export function textOfTokenType(tt: TokenType): string {
             return "**"
         case '#TokenType_AtSign':
             return "@"
+        case '#TokenType_Caret':
+            return "^"
+        case '#TokenType_CaretColon':
+            return "^:"
         case '#TokenType_Colon':
             return ":"
         case '#TokenType_ColonColon':
@@ -138,14 +150,14 @@ export function textOfTokenType(tt: TokenType): string {
             return "."
         case '#TokenType_DotDot':
             return ".."
-        case '#TokenType_DotDotDot':
-            return "..."
         case '#TokenType_Equals':
             return "="
         case '#TokenType_EqualsArrow':
             return "=>"
         case '#TokenType_EqualsEquals':
             return "=="
+        case '#TokenType_EqualsColonEquals':
+            return "=:="
         case '#TokenType_EqualsEqualsEquals':
             return "==="
         case '#TokenType_Exclamation':
@@ -162,10 +174,14 @@ export function textOfTokenType(tt: TokenType): string {
             return "{"
         case '#TokenType_LeftBracket':
             return "["
+        case '#TokenType_LeftMustache':
+            return "{{"
         case '#TokenType_LeftParenthesis':
             return "("
         case '#TokenType_LessThan':
             return "<"
+        case '#TokenType_LessThanColon':
+            return "<:"
         case '#TokenType_LessThanOrEquals':
             return "<="
         case '#TokenType_Plus':
@@ -182,6 +198,8 @@ export function textOfTokenType(tt: TokenType): string {
             return "}"
         case '#TokenType_RightBracket':
             return "]"
+        case '#TokenType_RightMustache':
+            return "}}"
         case '#TokenType_RightParenthesis':
             return ")"
         case '#TokenType_Semicolon':
@@ -198,6 +216,8 @@ export function textOfTokenType(tt: TokenType): string {
             return "|"
 
         // Keywords
+        case '#TokenType_Absent':
+            return "absent"
         case '#TokenType_And':
             return "and"
         case '#TokenType_As':
@@ -210,6 +230,8 @@ export function textOfTokenType(tt: TokenType): string {
             return "Float64"
         case '#TokenType_Fn':
             return "fn"
+        case '#TokenType_Gen':
+            return "gen"
         case '#TokenType_In':
             return "in"
         case '#TokenType_Int64':
@@ -228,8 +250,12 @@ export function textOfTokenType(tt: TokenType): string {
             return "String"
         case '#TokenType_True':
             return "true"
+        case '#TokenType_Verify':
+            return "verify"
         case '#TokenType_When':
             return "when"
+        case '#TokenType_Where':
+            return "where"
         case '#TokenType_Xor':
             return "xor"
 
@@ -237,14 +263,10 @@ export function textOfTokenType(tt: TokenType): string {
         case '#TokenType_ExclamationString':
             return "[exclamation string]"
 
-        case '#TokenType_BackTick':
-            return "`"
         case '#TokenType_DoubleQuote':
             return '"'
         case '#TokenType_SingleQuote':
             return "'"
-        case '#TokenType_TripleBackTick':
-            return "```"
         case '#TokenType_TripleDoubleQuote':
             return '"""'
         case '#TokenType_TripleSingleQuote':
@@ -252,10 +274,6 @@ export function textOfTokenType(tt: TokenType): string {
 
         case '#TokenType_StringFragment':
             return "[string fragment]"
-        case '#TokenType_LeftGuillemot':
-            return "[opening guillemot]"
-        case '#TokenType_RightGuillemot':
-            return "[closing guillemot]"
 
         // Other Literals
         case '#TokenType_FloatingPointLiteral':
@@ -264,10 +282,16 @@ export function textOfTokenType(tt: TokenType): string {
             return "[integer literal]"
 
         // Identifiers
+        case '#TokenType_BackTickedIdentifier':
+            return "[back-ticked identifier]"
         case '#TokenType_Identifier':
             return "[identifier]"
 
         // Errors
+        case '#TokenType_EmptyBackTickedIdentifier':
+            return "[error - back-ticked identifier text is empty]"
+        case '#TokenType_UnclosedBackTickedIdentifier':
+            return "[error - back-ticked identifier extends past end of line]"
         case '#TokenType_UnclosedString':
             return "[error - string literal extends past end of line]"
         case '#TokenType_UnrecognizedChar':

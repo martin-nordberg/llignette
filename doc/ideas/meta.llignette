@@ -20,23 +20,15 @@ p ^: PACKAGE {
     ...
 }
 
-p.^dependencies
-p.^dependents
-p.^name
-
 p^.dependencies
 p^.dependents
 p^.name
-
-p^dependencies
-p^dependents
-p^name
-p^parent
-p^path()
+p^.parent
+p^.path()
 
 
 f: (a:T1, b:T2) -> R => ...
 
-f._name
-f._arguments
-f._returnType
+f^._name
+f^._arguments
+f^._returnType

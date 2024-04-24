@@ -153,65 +153,18 @@ describe('Scanner test', () => {
         expect(result.newLineOffsets.length).toBe(1)
     })
 
-    it("scans a few back ticked strings", () => {
+    it("scans back-ticked identifiers", () => {
         const result = scan(
-            "`abc` `xyz` `bad\n `start over`",
+            "`abc` `xyz` `bad\n `` `start over`",
         )
 
-        expectToken(result.tokens[0], '#TokenType_BackTick', 0, 1)
-        expectToken(result.tokens[1], '#TokenType_StringFragment', 1, 3)
-        expectToken(result.tokens[2], '#TokenType_BackTick', 4, 1)
-        expectToken(result.tokens[3], '#TokenType_BackTick', 6, 1)
-        expectToken(result.tokens[4], '#TokenType_StringFragment', 7, 3)
-        expectToken(result.tokens[5], '#TokenType_BackTick', 10, 1)
-        expectToken(result.tokens[6], '#TokenType_BackTick', 12, 1)
-        expectToken(result.tokens[7], '#TokenType_UnclosedString', 13, 3)
-        expectToken(result.tokens[8], '#TokenType_BackTick', 18, 1)
-        expectToken(result.tokens[9], '#TokenType_StringFragment', 19, 10)
-        expectToken(result.tokens[10], '#TokenType_BackTick', 29, 1)
-        expectToken(result.tokens[11], '#TokenType_Eof', 30, 0)
+        expectToken(result.tokens[0], '#TokenType_BackTickedIdentifier', 0, 5)
+        expectToken(result.tokens[1], '#TokenType_BackTickedIdentifier', 6, 5)
+        expectToken(result.tokens[2], '#TokenType_UnclosedBackTickedIdentifier', 12, 4)
+        expectToken(result.tokens[3], '#TokenType_EmptyBackTickedIdentifier', 18, 2)
+        expectToken(result.tokens[4], '#TokenType_BackTickedIdentifier', 21, 12)
+        expectToken(result.tokens[5], '#TokenType_Eof', 33, 0)
         expect(result.newLineOffsets.length).toBe(1)
-    })
-
-    it("scans an interpolated back ticked string", () => {
-        const result = scan(
-            "`abc{{stuff}}`",
-        )
-
-        expectToken(result.tokens[0], '#TokenType_BackTick', 0, 1)
-        expectToken(result.tokens[1], '#TokenType_StringFragment', 1, 3)
-        expectToken(result.tokens[2], '#TokenType_LeftGuillemot', 4, 2)
-        expectToken(result.tokens[3], '#TokenType_Identifier', 6, 5)
-        expectToken(result.tokens[4], '#TokenType_RightGuillemot', 11, 2)
-        expectToken(result.tokens[5], '#TokenType_BackTick', 13, 1)
-        expectToken(result.tokens[6], '#TokenType_Eof', 14, 0)
-        expect(result.newLineOffsets.length).toBe(0)
-    })
-
-    it("scans a nested interpolated back ticked string", () => {
-        const result = scan(
-            "`abc{{funct('{{inner}}')}} then {{another}}`",
-        )
-
-        expectToken(result.tokens[0], '#TokenType_BackTick', 0, 1)
-        expectToken(result.tokens[1], '#TokenType_StringFragment', 1, 3)
-        expectToken(result.tokens[2], '#TokenType_LeftGuillemot', 4, 2)
-        expectToken(result.tokens[3], '#TokenType_Identifier', 6, 5)
-        expectToken(result.tokens[4], '#TokenType_LeftParenthesis', 11, 1)
-        expectToken(result.tokens[5], '#TokenType_SingleQuote', 12, 1)
-        expectToken(result.tokens[6], '#TokenType_LeftGuillemot', 13, 2)
-        expectToken(result.tokens[7], '#TokenType_Identifier', 15, 5)
-        expectToken(result.tokens[8], '#TokenType_RightGuillemot', 20, 2)
-        expectToken(result.tokens[9], '#TokenType_SingleQuote', 22, 1)
-        expectToken(result.tokens[10], '#TokenType_RightParenthesis', 23, 1)
-        expectToken(result.tokens[11], '#TokenType_RightGuillemot', 24, 2)
-        expectToken(result.tokens[12], '#TokenType_StringFragment', 26, 6)
-        expectToken(result.tokens[13], '#TokenType_LeftGuillemot', 32, 2)
-        expectToken(result.tokens[14], '#TokenType_Identifier', 34, 7)
-        expectToken(result.tokens[15], '#TokenType_RightGuillemot', 41, 2)
-        expectToken(result.tokens[16], '#TokenType_BackTick', 43, 1)
-        expectToken(result.tokens[17], '#TokenType_Eof', 44, 0)
-        expect(result.newLineOffsets.length).toBe(0)
     })
 
     it("scans boolean literals", () => {

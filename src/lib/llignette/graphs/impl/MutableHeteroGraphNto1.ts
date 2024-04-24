@@ -4,16 +4,9 @@
 //
 
 import {type Keyed} from "../Keyed"
-import {
-    type FilterableHeadVertexTraversal,
-    type HeadVertexTraversal,
-    type HeteroEdgeTraversal,
-    type HeteroGraph,
-    type TailVertexTraversal
-} from "../HeteroGraph"
+import {type HeadVertexTraversal, type HeteroEdgeTraversal, type HeteroGraph, type TailVertexTraversal} from "../HeteroGraph"
 import {someOrNone, type Optional} from "../../util/Optional";
 import {type HeteroEdge} from "../Edges";
-import {type Observer, Subscription} from "rxjs";
 
 //=====================================================================================================================
 
@@ -22,36 +15,32 @@ type VertexKey = symbol
 //=====================================================================================================================
 
 /**
- * Mutable implementation of HeteroGraph.
+ * Mutable implementation of HeteroGraph with at most one head vertex per tail vertex.
  */
-export class MutableHeteroGraphNtoN<TailVertex extends Keyed, HeadVertex extends Keyed, EdgeProperties>
+export class MutableHeteroGraphNto1<TailVertex extends Keyed, HeadVertex extends Keyed, EdgeProperties>
     implements HeteroGraph<TailVertex, HeadVertex, EdgeProperties> {
 
     private edgeCount: number
+    private readonly edgeOut: Map<VertexKey, HeteroEdge<TailVertex, HeadVertex, EdgeProperties>>
     private readonly edgesIn: Map<VertexKey, HeteroEdge<TailVertex, HeadVertex, EdgeProperties>[]>
-    private readonly edgesOut: Map<VertexKey, HeteroEdge<TailVertex, HeadVertex, EdgeProperties>[]>
-    private readonly headVertices: Map<VertexKey, HeadVertex>
-    private readonly tailVertices: Map<VertexKey, TailVertex>
+    private readonly headVerticesByKey: Map<VertexKey, HeadVertex>
+    private readonly tailVerticesByKey: Map<VertexKey, TailVertex>
     private vertexCount: number
 
     constructor() {
         this.edgeCount = 0
         this.edgesIn = new Map()
-        this.edgesOut = new Map()
-        this.headVertices = new Map()
-        this.tailVertices = new Map()
+        this.edgeOut = new Map()
+        this.headVerticesByKey = new Map()
+        this.tailVerticesByKey = new Map()
         this.vertexCount = 0
     }
 
-    forEachEdge(): HeteroEdgeTraversal<TailVertex, HeadVertex, EdgeProperties> {
+    edges(): HeteroEdgeTraversal<TailVertex, HeadVertex, EdgeProperties> {
         throw new Error("Not yet implemented")
     }
 
-    forEachHeadVertex(): HeadVertexTraversal<TailVertex, HeadVertex, EdgeProperties> {
-        throw new Error("Not yet implemented")
-    }
-
-    forEachIncomingEdge(
+    #forEachIncomingEdge(
         callback: (edge: HeteroEdge<TailVertex, HeadVertex, EdgeProperties>) => void
     ) {
         return (vertex: HeadVertex) => {
@@ -64,37 +53,33 @@ export class MutableHeteroGraphNtoN<TailVertex extends Keyed, HeadVertex extends
         }
     }
 
-    forEachInJoinedVertex(
+    #forEachInJoinedVertex(
         callback: (vertex: TailVertex) => void
     ) {
-        return this.forEachIncomingEdge(edge => {
+        return this.#forEachIncomingEdge(edge => {
             callback(edge.tail)
         })
     }
 
-    forEachOutgoingEdge(
+    #forEachOutgoingEdge(
         callback: (edge: HeteroEdge<TailVertex, HeadVertex, EdgeProperties>) => void
     ) {
         return (vertex: TailVertex) => {
-            const edgesOut = this.edgesOut.get(vertex.key)
-            if (edgesOut) {
-                edgesOut.forEach(callback)
+            const edgeOut = this.edgeOut.get(vertex.key)
+            if (edgeOut) {
+                callback(edgeOut)
             } else if (!this.hasTailVertex(vertex)) {
                 throw Error("Vertex not present in this graph.")
             }
         }
     }
 
-    forEachOutJoinedVertex(
+    #forEachOutJoinedVertex(
         callback: (vertex: HeadVertex) => void
     ) {
-        return this.forEachOutgoingEdge(edge => {
+        return this.#forEachOutgoingEdge(edge => {
             callback(edge.head)
         })
-    }
-
-    forEachTailVertex(): TailVertexTraversal<TailVertex, HeadVertex, EdgeProperties> {
-        throw new Error("Not yet implemented")
     }
 
     /**
@@ -102,9 +87,9 @@ export class MutableHeteroGraphNtoN<TailVertex extends Keyed, HeadVertex extends
      */
     freeze(): HeteroGraph<TailVertex, HeadVertex, EdgeProperties> {
         Object.freeze(this.edgesIn)
-        Object.freeze(this.edgesOut)
-        Object.freeze(this.tailVertices)
-        Object.freeze(this.headVertices)
+        Object.freeze(this.edgeOut)
+        Object.freeze(this.tailVerticesByKey)
+        Object.freeze(this.headVerticesByKey)
         return Object.freeze(this)
     }
 
@@ -113,19 +98,23 @@ export class MutableHeteroGraphNtoN<TailVertex extends Keyed, HeadVertex extends
         const tail = edge.tail
         return this.hasTailVertex(tail) && this.hasHeadVertex(head) &&
             this.edgesIn.get(head.key)!.includes(edge) &&
-            this.edgesOut.get(tail.key)!.includes(edge)
+            this.edgeOut.get(tail.key) === edge
     }
 
     hasHeadVertex(vertex: HeadVertex): boolean {
-        return this.headVertices.has(vertex.key)
+        return this.headVerticesByKey.has(vertex.key)
     }
 
     hasTailVertex(vertex: TailVertex): boolean {
-        return this.tailVertices.has(vertex.key)
+        return this.tailVerticesByKey.has(vertex.key)
     }
 
     headVertexWithKey(key: symbol): Optional<HeadVertex> {
-        return someOrNone(this.headVertices.get(key))
+        return someOrNone(this.headVerticesByKey.get(key))
+    }
+
+    headVertices(): HeadVertexTraversal<TailVertex, HeadVertex, EdgeProperties> {
+        throw new Error("Not yet implemented")
     }
 
     /**
@@ -133,10 +122,10 @@ export class MutableHeteroGraphNtoN<TailVertex extends Keyed, HeadVertex extends
      * @param vertex the vertex to add
      */
     #includeHead(vertex: HeadVertex): HeadVertex {
-        if (!this.headVertices.get(vertex.key)) {
-            this.headVertices.set(vertex.key, vertex)
+        if (!this.headVerticesByKey.get(vertex.key)) {
+            this.headVerticesByKey.set(vertex.key, vertex)
             this.edgesIn.set(vertex.key, [])
-            if (!this.tailVertices.get(vertex.key)) {
+            if (!this.tailVerticesByKey.get(vertex.key)) {
                 this.vertexCount += 1
             }
         }
@@ -148,10 +137,9 @@ export class MutableHeteroGraphNtoN<TailVertex extends Keyed, HeadVertex extends
      * @param vertex the vertex to add
      */
     #includeTail(vertex: TailVertex): TailVertex {
-        if (!this.tailVertices.get(vertex.key)) {
-            this.tailVertices.set(vertex.key, vertex)
-            this.edgesOut.set(vertex.key, [])
-            if (!this.headVertices.get(vertex.key)) {
+        if (!this.tailVerticesByKey.get(vertex.key)) {
+            this.tailVerticesByKey.set(vertex.key, vertex)
+            if (!this.headVerticesByKey.get(vertex.key)) {
                 this.vertexCount += 1
             }
         }
@@ -173,8 +161,11 @@ export class MutableHeteroGraphNtoN<TailVertex extends Keyed, HeadVertex extends
         head: HeadVertex,
         edgeProperties: EdgeProperties
     ): HeteroEdge<TailVertex, HeadVertex, EdgeProperties> {
-        if (head as any === tail as any) {
+        if (head.key === tail.key) {
             throw Error("Self loops not allowed.")
+        }
+        if (this.edgeOut.get(tail.key)) {
+            throw Error("Tail vertex is already linked to a different head.")
         }
 
         this.#includeTail(tail)
@@ -188,7 +179,7 @@ export class MutableHeteroGraphNtoN<TailVertex extends Keyed, HeadVertex extends
         }
 
         this.edgeCount += 1
-        this.edgesOut.get(tail.key)!.push(result)
+        this.edgeOut.set(tail.key, result)
         this.edgesIn.get(head.key)!.push(result)
 
         return result
@@ -199,7 +190,7 @@ export class MutableHeteroGraphNtoN<TailVertex extends Keyed, HeadVertex extends
     }
 
     outDegree(vertex: TailVertex): number {
-        return this.edgesOut.get(vertex.key)?.length ?? 0
+        return this.edgeOut.get(vertex.key) ? 1 : 0
     }
 
     get size(): number {
@@ -207,38 +198,11 @@ export class MutableHeteroGraphNtoN<TailVertex extends Keyed, HeadVertex extends
     }
 
     tailVertexWithKey(key: symbol): Optional<TailVertex> {
-        return someOrNone(this.tailVertices.get(key))
+        return someOrNone(this.tailVerticesByKey.get(key))
     }
 
-}
-
-//=====================================================================================================================
-
-class HeadVertexTraversalNtoN<TailVertex extends Keyed, HeadVertex extends Keyed, EdgeProperties>
-    implements HeadVertexTraversal<TailVertex, HeadVertex, EdgeProperties> {
-
-    joinedFromVertex(vertex: TailVertex): FilterableHeadVertexTraversal<TailVertex, HeadVertex, EdgeProperties> {
-        throw Error("Not yet implemented");
-    }
-
-    joinedFromVertexWithKey(key: symbol): FilterableHeadVertexTraversal<TailVertex, HeadVertex, EdgeProperties> {
-        throw Error("Not yet implemented");
-    }
-
-    matching(predicate: (vertex: HeadVertex) => boolean): FilterableHeadVertexTraversal<TailVertex, HeadVertex, EdgeProperties> {
-        throw Error("Not yet implemented");
-    }
-
-    subscribe(observer: Partial<Observer<HeadVertex>> | ((value: HeadVertex) => void)): Subscription {
-        throw Error("Not yet implemented");
-    }
-
-    withIncomingEdgeMatching(predicate: (edge: EdgeProperties) => boolean): FilterableHeadVertexTraversal<TailVertex, HeadVertex, EdgeProperties> {
-        throw Error("Not yet implemented");
-    }
-
-    withKey(key: symbol): FilterableHeadVertexTraversal<TailVertex, HeadVertex, EdgeProperties> {
-        throw Error("Not yet implemented");
+    tailVertices(): TailVertexTraversal<TailVertex, HeadVertex, EdgeProperties> {
+        throw new Error("Not yet implemented")
     }
 
 }

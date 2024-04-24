@@ -8,9 +8,9 @@ describe('Simple Parsing Tests', () => {
     const check = function (sourceCode: string) {
         let scanResult = scan(sourceCode)
 
-        const parseResult = parseModule(scanResult)
+        const module = parseModule(scanResult)
 
-        expect(parseResult.module.sourcePos.getText(sourceCode).length).toBeGreaterThan(0)
+        expect(module.sourcePos.getText(sourceCode).length).toBeGreaterThan(0)
     }
 
     it("parses boolean fields", () => {
@@ -44,7 +44,7 @@ describe('Simple Parsing Tests', () => {
     it("parses simple string literals", () => {
         check(`s1 = "123"`)
         check(`s2 = '789'`)
-        check("s3 = `three`")
+        check("s3 = 'three'")
         check(`x = """
         yea
         verily
@@ -53,11 +53,23 @@ describe('Simple Parsing Tests', () => {
         yea
         verily
         '''`)
-        check("x = ```\n  yea\n  verily```")
+        check("x = '''\n  yea\n  verily'''")
+    })
+
+    it("parses empty string literals", () => {
+        check(`s1 = ""`)
+        check(`s2 = ''`)
+        check(`s1 = """"""`)
+        check(`s1 = ''''''`)
     })
 
     it("parses interpolated string literals", () => {
         check(`s1 = "a{{b}}c"`)
+        check(`s1 = 'a{{b}}'`)
+        check(`s1 = "{{b}}c"`)
+        check(`s1 = """a{{ b + 1 }}c"""`)
+        check(`s1 = '''a{{ b + 1 }}'''`)
+        check("s1 = '''{{ b + 1 }}c'''")
     })
 
     it("parses arithmetic", () => {
@@ -110,14 +122,21 @@ describe('Simple Parsing Tests', () => {
         check("x = (a: Int64 = 3)")
         check("x = (a)")
         check("x = (a::'stuff')" )
-        // check("x = ()")
-        // check("x = (t = #Tag, state = #Ready, value: String)")
-        // check("c = sqrt(_a**2 + _b**2), _a = 3, _b = 4")
+        check("x = ()")
+        check("x = (t = #Tag, state = #Ready, value: String)")
+        check("c = sqrt(_a**2 + _b**2), _a = 3, _b = 4")
+
+        check("v ^: VALUE : Int64 :: 'My favorite' ??= 42")
+        check("x = (v ^: VALUE : Int64 :: 'My favorite' ??= 42)")
+    })
+
+    it("parses alias fields", () => {
+        check("x =:= my.fine.x")
     })
 
     it("parses documentation", () => {
         check("x :: 'a fine field' = (a = 3, b=4)")
-        check("x :: `another one` = (a: Int64 = 3)")
+        check("x :: '''another one''' = (a: Int64 = 3)")
         check('x :: "a third" = (a)')
     })
 
@@ -135,7 +154,7 @@ describe('Simple Parsing Tests', () => {
     it("parses function calls", () => {
         check("y = f(x=5)")
         check("y = f(x)")
-        check("y = f(5)")
+        check("y = f(5+7)")
         check("y = s.length()")
         check("y = a.append(x)")
     })
@@ -157,11 +176,15 @@ describe('Simple Parsing Tests', () => {
         check("q = (x: Float64 & >0 & units('mm'), y: Float64 & >0 & units('mm')) & .x < .y")
     })
 
-    it("parses where clauses", () => {
+    it("parses metadata operators", () => {
+        check("_ymeta_ = y^")
+        check("_yname_ = y^.name")
+        check("_yname_ = y^.path()")
     })
 
     it("parses 'in' expressions", () => {
         check("athlete = studentActivity in sports")
+        check("athlete = `studentActivity` in sports")
     })
 
     it("parses type states", () => {
@@ -169,11 +192,14 @@ describe('Simple Parsing Tests', () => {
         check("x = 4, file ~= file & (open: true)")
     })
 
-    it("parses injected fields", () => {
-        check("p = (...q, r=42)")
-        check("p = (twelve=12, ...q, r=42)")
-        check("p = (twelve=12, ...q(e), r=42)")
-        check("p = (twelve=12\n ...q&s&t, r=42)")
+    it("parses identifier interpolations", () => {
+        check("x = fn(s:String) => ({{s}}: Int64 = 42)")
+        check("x = fn(t:String) => (s: {{t}} = 42)")
+        check("x = fn(t:String) => (s: t = {{t}})")
+    })
+
+    it("parses generator options", () => {
+        check("x = gen(V: Type) => (o = Int64 when V <: Special, o = absent otherwise)")
     })
 
 });

@@ -118,3 +118,17 @@ Name
 ⟤⟥
 ⟢⟣
 
+
+«The lazy fox»
+
+“The lazy fox”
+❝The lazy fox❞
+
+
+‹The lazy fox›
+
+<The lazy fox>
+
+
+‘The lazy fox’
+‚The lazy fox

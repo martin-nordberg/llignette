@@ -6,18 +6,18 @@
 import type {ScanningOutcome} from "../scanning/Scanner"
 import type {
     BinaryOperationExprTag,
-    Field,
+    Field, FieldPurpose,
     FieldValueType,
     FunctionDeclaration,
+    GeneratorDeclaration,
     Identifier,
-    InjectedRecord,
-    Model, ModelTag,
+    InterpolatedIdentifier,
+    Model,
     Module,
-    RecordEntry,
     UnaryOperationExpr,
     UnaryOperationExprTag
 } from "./Model";
-import {isRecord, type StringLiteral, type StringLiteralTag} from "./Model";
+import {isIdentifier, isRecord, type StringLiteral, type StringLiteralTag} from "./Model";
 import type {Token} from "../scanning/Token";
 import {getSourcePos} from "../scanning/Token";
 import {SourcePos} from "../util/SourcePos";
@@ -27,36 +27,14 @@ import type {TokenType} from "../scanning/TokenType";
 //=====================================================================================================================
 
 /**
- * The outcome of parsing.
- */
-export type ParsingOutcome = {
-    /** The original source code. */
-    readonly sourceCode: string,
-
-    /** Offsets of new line characters in the source code. */
-    readonly newLineOffsets: number[],
-
-    /** The root of the resulting AST. */
-    readonly module: Module,
-}
-
-//=====================================================================================================================
-
-/**
  * Parses a module from its scan result.
  * @param scanResult the tokens from the scanner.
  */
-export function parseModule(scanResult: ScanningOutcome): ParsingOutcome {
+export function parseModule(scanResult: ScanningOutcome): Module {
 
     const parser = new Parser(scanResult)
 
-    const module = parser.parseModule()
-
-    return {
-        sourceCode: scanResult.sourceCode,
-        newLineOffsets: scanResult.newLineOffsets,
-        module
-    }
+    return parser.parseModule()
 
 }
 
@@ -128,7 +106,7 @@ class Parser {
      */
     parseModule(): Module {
 
-        const entries: RecordEntry[] = this.#parseRecordEntries()
+        const fields: Field[] = this.#parseFields()
 
         if (this.tokens[this.tokensIndex].tokenType != '#TokenType_Eof') {
             this.#addError("Expected end of file")
@@ -137,8 +115,10 @@ class Parser {
         return {
             tag: '#Model_Module',
             key: Symbol(),
-            sourcePos: entries[0].sourcePos.thru(entries[entries.length - 1].sourcePos),
-            entries
+            sourceCode: this.sourceCode,
+            newLineOffsets: this.newLineOffsets,
+            sourcePos: fields[0].sourcePos.thru(fields[fields.length - 1].sourcePos),
+            fields
         }
 
     }
@@ -180,44 +160,68 @@ class Parser {
         this.#addErrorAtPos(message, sourcePos)
     }
 
+    /**
+     * Converts a literal string fragment to its unescaped value.
+     * @param sourcePos the range from the first to last characters of the string.
+     */
     #getQuotedStringValue(sourcePos: SourcePos) {
         let value = sourcePos.getText(this.sourceCode)
-        value = value.substring(1, value.length - 1)
-        // TODO: convert escape sequences
-        // TODO: interpolations
+        value = value.replaceAll("//n", "/n")
+        value = value.replaceAll("//r", "/r")
+        value = value.replaceAll("//t", "/t")
+        // TODO: additional escapes
         return value
     }
 
-    #getTripleQuotedStringValue(sourcePos: SourcePos) {
-        let value = sourcePos.getText(this.sourceCode)
-        value = value.substring(3, value.length - 3)
-        // TODO: convert escape sequences
-        // TODO: interpolations
-        return value
+    #isFieldNameStartToken(tokenType: TokenType): Boolean {
+        return tokenType == '#TokenType_BackTickedIdentifier' ||
+            tokenType == '#TokenType_Identifier' ||
+            tokenType == '#TokenType_LeftMustache'
     }
 
     /**
-     * tests whether the given token can come after a field name in a structure.
+     * Tests whether the given token type can come after a field name in a structure.
      * @param tokenType the type of token
      */
-    #isTokenAfterRecordFieldName(tokenType: TokenType) {
-        return tokenType == '#TokenType_Comma' ||
-            tokenType == '#TokenType_AmpersandEquals' ||
-            tokenType == '#TokenType_Equals' ||
+    #isTokenAfterRecordFieldName(tokenType: TokenType): boolean {
+        return tokenType == '#TokenType_AmpersandEquals' ||
+            tokenType == '#TokenType_CaretColon' ||
             tokenType == '#TokenType_Colon' ||
             tokenType == '#TokenType_ColonColon' ||
+            tokenType == '#TokenType_Comma' ||
+            tokenType == '#TokenType_Equals' ||
             tokenType == '#TokenType_QuestionQuestionEquals' ||
             tokenType == '#TokenType_RightParenthesis' ||
-            tokenType == '#TokenType_TildeEquals'
+            tokenType == '#TokenType_TildeEquals' ||
+            tokenType == '#TokenType_Where'
+    }
+
+    /**
+     * Looks ahead to see if upcoming tokens are the start of a field.
+     */
+    #lookAheadIsField(): boolean {
+        if (this.tokens[this.tokensIndex].tokenType == '#TokenType_Identifier') {
+            return this.#isTokenAfterRecordFieldName(this.tokens[this.tokensIndex + 1].tokenType)
+        }
+
+        if (this.tokens[this.tokensIndex].tokenType == '#TokenType_LeftMustache') {
+            for (let i = this.tokensIndex + 1; i < this.tokens.length; i += 1) {
+                if (this.tokens[i].tokenType == '#TokenType_RightMustache') {
+                    return this.#isTokenAfterRecordFieldName(this.tokens[i + 1].tokenType)
+                }
+            }
+            return false
+        }
+
+        return false
     }
 
     /**
      * Parses an array literal just after consuming the opening left bracket.
-     * @param lBracketToken the left bracket token (used for source position)
+     * @param startSourcePos the left bracket token source position
      */
-    #parseArrayLiteral(lBracketToken: Token): Model {
+    #parseArrayLiteral(startSourcePos: SourcePos): Model {
 
-        const startSourcePos = getSourcePos(lBracketToken)
         const elements: Model[] = []
 
         // Handle an empty array specifically.
@@ -264,7 +268,7 @@ class Parser {
     /**
      * Parses one field in a structure.
      */
-    #parseField(): Field {
+    #parseField(purpose: FieldPurpose): Field {
 
         const startSourcePos = getSourcePos(this.tokens[this.tokensIndex])
 
@@ -273,16 +277,13 @@ class Parser {
 
         let documentation: Optional<StringLiteral> = none()
         let typeExpr: Optional<Model> = none()
+        let metaTypeExpr: Optional<Model> = none()
 
         // Parse the documentation and type in either order.
         while (true) {
             if (this.tokens[this.tokensIndex].tokenType == '#TokenType_ColonColon' && isNone(documentation)) {
                 this.tokensIndex += 1
                 switch (this.tokens[this.tokensIndex].tokenType) {
-                    case '#TokenType_BackTick':
-                        this.tokensIndex += 1
-                        documentation = some(this.#parseString(startSourcePos, '#TokenType_BackTick', '#Model_Literal_String_BackTicked'))
-                        break
                     case '#TokenType_DoubleQuote':
                         this.tokensIndex += 1
                         documentation = some(this.#parseString(startSourcePos, '#TokenType_DoubleQuote', '#Model_Literal_String_DoubleQuoted'))
@@ -290,10 +291,6 @@ class Parser {
                     case '#TokenType_SingleQuote':
                         this.tokensIndex += 1
                         documentation = some(this.#parseString(startSourcePos, '#TokenType_SingleQuote', '#Model_Literal_String_DoubleQuoted'))
-                        break
-                    case '#TokenType_TripleBackTick':
-                        this.tokensIndex += 1
-                        documentation = some(this.#parseString(startSourcePos, '#TokenType_TripleBackTick', '#Model_Literal_String_TripleBackTicked'))
                         break
                     case '#TokenType_TripleDoubleQuote':
                         this.tokensIndex += 1
@@ -311,6 +308,11 @@ class Parser {
                 const expr: Model = this.parseExprWithBindingPower(0)
                 endSourcePos = expr.sourcePos
                 typeExpr = some(expr)
+            } else if (this.tokens[this.tokensIndex].tokenType == '#TokenType_CaretColon' && isNone(metaTypeExpr)) {
+                this.tokensIndex += 1
+                const expr: Model = this.parseExprWithBindingPower(0)
+                endSourcePos = expr.sourcePos
+                metaTypeExpr = some(expr)
             } else {
                 break;
             }
@@ -325,6 +327,12 @@ class Parser {
             endSourcePos = expr.sourcePos
             valueExpr = some(expr)
             valueType = '#FieldValue_Fixed'
+        } else if (this.tokens[this.tokensIndex].tokenType == '#TokenType_EqualsColonEquals') {
+            this.tokensIndex += 1
+            const expr: Model = this.parseExprWithBindingPower(0)
+            endSourcePos = expr.sourcePos
+            valueExpr = some(expr)
+            valueType = '#FieldValue_Alias'
         } else if (this.tokens[this.tokensIndex].tokenType == '#TokenType_AmpersandEquals') {
             this.tokensIndex += 1
             const expr: Model = this.parseExprWithBindingPower(0)
@@ -352,9 +360,74 @@ class Parser {
             fieldName,
             documentation,
             typeExpr,
+            metaTypeExpr,
             valueExpr,
-            valueType
+            valueType,
+            purpose
         }
+
+    }
+
+    #parseFields(): Field[] {
+
+        let purpose: FieldPurpose = '#FieldPurpose_Result'
+        let fields: Field[] = []
+
+        // First entry.
+        if (this.#isFieldNameStartToken(this.tokens[this.tokensIndex].tokenType)) {
+            fields.push(this.#parseField(purpose))
+        } else {
+            this.#addError("Expected field declaration.")
+        }
+
+        // Subsequent entries.
+        while (true) {
+            // Subsequent entry after a comma.
+            if (this.tokens[this.tokensIndex].tokenType == '#TokenType_Comma') {
+                this.tokensIndex += 1
+                if (this.tokens[this.tokensIndex].tokenType == '#TokenType_Identifier') {
+                    fields.push(this.#parseField(purpose))
+                    continue
+                }
+            }
+
+            // Subsequent field name after an intervening new line.
+            else if (this.#isFieldNameStartToken(this.tokens[this.tokensIndex].tokenType)) {
+                const betweenTokensStart = this.tokens[this.tokensIndex - 1].sourceOffset +
+                    this.tokens[this.tokensIndex - 1].sourceLength
+                const betweenTokensEnd = this.tokens[this.tokensIndex].sourceOffset
+
+                const betweenTokens = this.sourceCode.substring(betweenTokensStart, betweenTokensEnd)
+                if (betweenTokens.split("\n").length > 1) {
+                    fields.push(this.#parseField(purpose))
+                    continue
+                }
+            } else if (this.tokens[this.tokensIndex].tokenType == '#TokenType_Verify') {
+                this.tokensIndex += 1
+                purpose = '#FieldPurpose_Verification'
+
+                if (this.#isFieldNameStartToken(this.tokens[this.tokensIndex].tokenType)) {
+                    fields.push(this.#parseField(purpose))
+                    continue
+                } else {
+                    this.#addError("Keyword 'verify' must be followed by at least one field")
+                }
+            } else if (this.tokens[this.tokensIndex].tokenType == '#TokenType_Where') {
+                this.tokensIndex += 1
+                purpose = '#FieldPurpose_Temporary'
+
+                if (this.#isFieldNameStartToken(this.tokens[this.tokensIndex].tokenType)) {
+                    fields.push(this.#parseField(purpose))
+                    continue
+                } else {
+                    this.#addError("Keyword 'where' must be followed by at least one field")
+                }
+            }
+
+            break
+        }
+
+        return fields
 
     }
 
@@ -362,7 +435,7 @@ class Parser {
      * Parses a function declaration after consuming the opening 'fn' token.
      * @param fnToken the 'fn' token that starts the declaration.
      */
-    #parseFunctionDeclaration(fnToken: Token): FunctionDeclaration {
+    #parseFunctionDeclaration(fnToken: Token): FunctionDeclaration | GeneratorDeclaration {
         const lParenToken = this.tokens[this.tokensIndex]
 
         if (lParenToken.tokenType != '#TokenType_LeftParenthesis') {
@@ -371,7 +444,8 @@ class Parser {
 
         this.tokensIndex += 1
 
-        const argumentRecord = this.#parseParenthesizedExpression(lParenToken)
+        const sourcePos = getSourcePos(lParenToken)
+        const argumentRecord = this.#parseParenthesizedExpression(sourcePos)
 
         if (!isRecord(argumentRecord)) {
             this.#addErrorAtPos("Expected argument list", argumentRecord.sourcePos)
@@ -392,9 +466,11 @@ class Parser {
 
         const body = this.parseExprWithBindingPower(0)
 
+        const tag = fnToken.tokenType == '#TokenType_Gen' ? '#Model_GeneratorDeclaration' : '#Model_FunctionDeclaration'
+
         return {
             key: Symbol(),
-            tag: '#Model_FunctionDeclaration',
+            tag,
             sourcePos: getSourcePos(fnToken).thru(body.sourcePos),
             argumentRecord,
             returnType,
@@ -407,21 +483,27 @@ class Parser {
      */
     #parseIdentifier(): Identifier {
 
-        if (this.tokens[this.tokensIndex].tokenType != '#TokenType_Identifier') {
-            this.#addError("Expected field name (identifier).")
+        if (this.tokens[this.tokensIndex].tokenType == '#TokenType_Identifier' ||
+            this.tokens[this.tokensIndex].tokenType == '#TokenType_BackTickedIdentifier') {
+            const sourcePos = getSourcePos(this.tokens[this.tokensIndex])
+            const name = sourcePos.getText(this.sourceCode)
+            this.tokensIndex += 1
+
+            return {
+                tag: '#Model_Identifier',
+                key: Symbol(),
+                sourcePos,
+                name
+            }
         }
 
-        const sourcePos = getSourcePos(this.tokens[this.tokensIndex])
-        const name = sourcePos.getText(this.sourceCode)
-        this.tokensIndex += 1
-
-        return {
-            tag: '#Model_Identifier',
-            key: Symbol(),
-            sourcePos,
-            name
+        if (this.tokens[this.tokensIndex].tokenType == '#TokenType_LeftMustache') {
+            this.tokensIndex += 1
+            const sourcePos = getSourcePos(this.tokens[this.tokensIndex])
+            return this.#parseInterpolatedIdentifier(sourcePos)
         }
 
+        this.#addError("Expected field name (identifier).")
     }
 
     /**
@@ -445,24 +527,23 @@ class Parser {
         }
     }
 
-    /**
-     * Parses an injected record ( '...' expression ) after recognizing (but not consuming)
-     * the '...' token.
-     */
-    #parseInjectedRecord(): InjectedRecord {
+    #parseInterpolatedIdentifier(startSourcePos: SourcePos): InterpolatedIdentifier {
+        const expression = this.parseExprWithBindingPower(0)
 
-        const startToken = this.tokens[this.tokensIndex]
-        this.tokensIndex += 1
-
-        const injectedValue = this.parseExprWithBindingPower(0)
-
-        return {
-            key: Symbol(),
-            tag: '#Model_InjectedRecord',
-            sourcePos: getSourcePos(startToken).thru(injectedValue.sourcePos),
-            injectedValue
+        if (this.tokens[this.tokensIndex].tokenType != '#TokenType_RightMustache') {
+            this.#addError("Expected right mustache '}}'")
         }
 
+        const sourcePos = startSourcePos.thru(getSourcePos(this.tokens[this.tokensIndex]))
+
+        this.tokensIndex += 1
+
+        return {
+            tag: '#Model_InterpolatedIdentifier',
+            key: Symbol(),
+            sourcePos,
+            expression
+        }
     }
 
     /**
@@ -477,14 +558,18 @@ class Parser {
 
         switch (token.tokenType) {
 
+            case '#TokenType_Absent':
+                return {
+                    key: Symbol(),
+                    tag: '#Model_Absent',
+                    sourcePos
+                }
+
             case '#TokenType_AtSign':
             case '#TokenType_Dash':
             case '#TokenType_Hash':
             case '#TokenType_Not':
                 return this.#parseUnaryPrefixOperationExpression(token)
-
-            case '#TokenType_BackTick':
-                return this.#parseString(sourcePos, '#TokenType_BackTick', '#Model_Literal_String_BackTicked')
 
             case '#TokenType_Boolean':
                 return {
@@ -529,6 +614,7 @@ class Parser {
                 }
 
             case '#TokenType_Fn':
+            case '#TokenType_Gen':
                 return this.#parseFunctionDeclaration(token)
 
             case '#TokenType_GreaterThan':
@@ -549,6 +635,7 @@ class Parser {
                     operand: gteOperand
                 }
 
+            case '#TokenType_BackTickedIdentifier':
             case '#TokenType_Identifier':
                 return {
                     key: Symbol(),
@@ -577,10 +664,13 @@ class Parser {
             //     return this.#parseSetExpression(token)
 
             case '#TokenType_LeftBracket':
-                return this.#parseArrayLiteral(token)
+                return this.#parseArrayLiteral(sourcePos)
+
+            case '#TokenType_LeftMustache':
+                return this.#parseInterpolatedIdentifier(sourcePos)
 
             case '#TokenType_LeftParenthesis':
-                return this.#parseParenthesizedExpression(token)
+                return this.#parseParenthesizedExpression(sourcePos)
 
             case '#TokenType_LessThan':
                 const ltOperand = this.parseExprWithBindingPower(0)
@@ -610,9 +700,6 @@ class Parser {
                     sourcePos: getSourcePos(token)
                 }
 
-            case '#TokenType_TripleBackTick':
-                return this.#parseString(sourcePos, '#TokenType_TripleBackTick', '#Model_Literal_String_TripleBackTicked')
-
             case '#TokenType_TripleDoubleQuote':
                 return this.#parseString(sourcePos, '#TokenType_TripleDoubleQuote', '#Model_Literal_String_TripleDoubleQuote')
 
@@ -635,30 +722,28 @@ class Parser {
 
     /**
      * Parses a parenthesized expression after consuming the opening parenthesis.
-     * @param lParenToken the left parenthesis token already consumed
+     * @param startSourcePos the left parenthesis token source position
      */
-    #parseParenthesizedExpression(lParenToken: Token): Model {
+    #parseParenthesizedExpression(startSourcePos: SourcePos): Model {
 
         // Handle empty parentheses specially.
         if (this.tokens[this.tokensIndex].tokenType == '#TokenType_RightParenthesis') {
             const endSourcePos = getSourcePos(this.tokens[this.tokensIndex])
             this.tokensIndex += 1
-            const sourcePos = getSourcePos(lParenToken).thru(endSourcePos)
+            const sourcePos = startSourcePos.thru(endSourcePos)
             return {
                 key: Symbol(),
                 tag: '#Model_Record',
                 sourcePos,
-                entries: []
+                fields: []
             }
         }
 
         // Parse as a record if it starts out with a field name and qualifier.
-        const lookAheadIsField = this.tokens[this.tokensIndex].tokenType == '#TokenType_Identifier' &&
-            this.#isTokenAfterRecordFieldName(this.tokens[this.tokensIndex + 1].tokenType)
-        const lookAheadIsInjection = this.tokens[this.tokensIndex].tokenType == '#TokenType_DotDotDot'
+        const lookAheadIsField = this.#lookAheadIsField()
 
-        if (lookAheadIsField || lookAheadIsInjection) {
-            const entries = this.#parseRecordEntries()
+        if (lookAheadIsField) {
+            const fields = this.#parseFields()
 
             if (this.tokens[this.tokensIndex].tokenType != '#TokenType_RightParenthesis') {
                 this.#addError("Expected ',' or ')'.")
@@ -670,13 +755,18 @@ class Parser {
             return {
                 key: Symbol(),
                 tag: '#Model_Record',
-                sourcePos: getSourcePos(lParenToken).thru(endSourcePos),
-                entries
+                sourcePos: startSourcePos.thru(endSourcePos),
+                fields
             }
         }
 
         // Parse the expression inside the parentheses.
         const operand = this.parseExprWithBindingPower(0)
+
+        // Handle an interpolated field name.
+        if (isIdentifier(operand) && this.#isTokenAfterRecordFieldName(this.tokens[this.tokensIndex + 1].tokenType)) {
+
+        }
 
         if (this.tokens[this.tokensIndex].tokenType != '#TokenType_RightParenthesis') {
             this.#addError("Expected " + '#TokenType_RightParenthesis')
@@ -688,7 +778,7 @@ class Parser {
         return {
             key: Symbol(),
             tag: '#Model_ParenthesizedExpr',
-            sourcePos: getSourcePos(lParenToken).thru(endSourcePos),
+            sourcePos: startSourcePos.thru(endSourcePos),
             operand
         }
 
@@ -697,6 +787,14 @@ class Parser {
     #parsePostfixExpression(leftOperand: Model, opToken: Token): Model {
 
         switch (opToken.tokenType) {
+
+            case '#TokenType_Caret':
+                return {
+                    key: Symbol(),
+                    tag: '#Model_MetaExpr',
+                    sourcePos: leftOperand.sourcePos.thru(getSourcePos(opToken)),
+                    operand: leftOperand
+                }
 
             case '#TokenType_LeftBracket':
                 let rBrToken = this.tokens[this.tokensIndex]
@@ -728,7 +826,8 @@ class Parser {
                 }
 
             case '#TokenType_LeftParenthesis':
-                const rightOperand = this.#parseParenthesizedExpression(opToken)
+                const sourcePos = getSourcePos(opToken)
+                const rightOperand = this.#parseParenthesizedExpression(sourcePos)
                 return {
                     key: Symbol(),
                     tag: '#Model_FunctionCallExpr',
@@ -759,68 +858,6 @@ class Parser {
 
     }
 
-    #parseRecordEntries(): RecordEntry[] {
-
-        let entries: RecordEntry[] = []
-
-        // First entry.
-        if (this.tokens[this.tokensIndex].tokenType == '#TokenType_Identifier') {
-            entries.push(this.#parseField())
-        } else if (this.tokens[this.tokensIndex].tokenType == '#TokenType_DotDotDot') {
-            entries.push(this.#parseInjectedRecord())
-        } else {
-            this.#addError("Expected field declaration or record injection.")
-        }
-
-        // Subsequent entries.
-        while (true) {
-            // Subsequent entry after a comma.
-            if (this.tokens[this.tokensIndex].tokenType == '#TokenType_Comma') {
-                this.tokensIndex += 1
-                if (this.tokens[this.tokensIndex].tokenType == '#TokenType_Identifier') {
-                    entries.push(this.#parseField())
-                    continue
-                }
-                if (this.tokens[this.tokensIndex].tokenType == '#TokenType_DotDotDot') {
-                    entries.push(this.#parseInjectedRecord())
-                    continue
-                }
-            }
-
-            // Subsequent field name after an intervening new line.
-            else if (this.tokens[this.tokensIndex].tokenType == '#TokenType_Identifier') {
-                const betweenTokensStart = this.tokens[this.tokensIndex - 1].sourceOffset +
-                    this.tokens[this.tokensIndex - 1].sourceLength
-                const betweenTokensEnd = this.tokens[this.tokensIndex].sourceOffset
-
-                const betweenTokens = this.sourceCode.substring(betweenTokensStart, betweenTokensEnd)
-                if (betweenTokens.split("\n").length > 1) {
-                    entries.push(this.#parseField())
-                    continue
-                }
-            }
-
-                // Subsequent injected value after an intervening new line.
-            // TODO: annotation, identifier interpolation
-            else if (this.tokens[this.tokensIndex].tokenType == '#TokenType_DotDotDot') {
-                const betweenTokensStart = this.tokens[this.tokensIndex - 1].sourceOffset +
-                    this.tokens[this.tokensIndex - 1].sourceLength
-                const betweenTokensEnd = this.tokens[this.tokensIndex].sourceOffset
-
-                const betweenTokens = this.sourceCode.substring(betweenTokensStart, betweenTokensEnd)
-                if (betweenTokens.split("\n").length > 1) {
-                    entries.push(this.#parseInjectedRecord())
-                    continue
-                }
-            }
-
-            break
-        }
-
-        return entries
-
-    }
-
     #parseString(startPos: SourcePos, delimiterType: TokenType, modelTag: StringLiteralTag): StringLiteral {
         const fragments = this.#parseStringFragments(delimiterType)
         return {
@@ -843,7 +880,7 @@ class Parser {
 
             switch (token.tokenType) {
                 case '#TokenType_StringFragment': {
-                    let value = sourcePos.getText(this.sourceCode)
+                    let value = this.#getQuotedStringValue(sourcePos)
                     result.push({
                         tag: '#Model_Literal_StringFragment',
                         key: Symbol(),
@@ -853,11 +890,11 @@ class Parser {
                     break
                 }
 
-                case '#TokenType_LeftGuillemot': {
+                case '#TokenType_LeftMustache': {
                     result.push(this.parseExprWithBindingPower(0))
 
-                    if (this.tokens[this.tokensIndex].tokenType != '#TokenType_RightGuillemot') {
-                        this.#addError("Expected right guillemot or mustache")
+                    if (this.tokens[this.tokensIndex].tokenType != '#TokenType_RightMustache') {
+                        this.#addError("Expected right mustache '}}'")
                     }
                     this.tokensIndex += 1
                     break
@@ -1012,6 +1049,10 @@ infixBindingPowers.set(
     {left: level, right: level + 1, exprTag: '#Model_LessThanExpr'}
 )
 infixBindingPowers.set(
+    '#TokenType_LessThanColon',
+    {left: level, right: level + 1, exprTag: '#Model_SubtypeExpr'}
+)
+infixBindingPowers.set(
     '#TokenType_LessThanOrEquals',
     {left: level, right: level + 1, exprTag: '#Model_LessThanOrEqualsExpr'}
 )
@@ -1104,6 +1145,7 @@ prefixBindingPowers.set(
 
 level += 2
 
+postfixBindingPowers.set('#TokenType_Caret', level)
 postfixBindingPowers.set('#TokenType_LeftParenthesis', level)
 postfixBindingPowers.set('#TokenType_LeftBracket', level)
 postfixBindingPowers.set('#TokenType_Question', level)

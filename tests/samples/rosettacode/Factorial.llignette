@@ -5,7 +5,7 @@ fact: Package = (
 
     factorial = fn(n: NaturalInt64) -> NaturalInt64 => (
         o = 1 when n == 0
-        o = n * factorial(n - 1) when n > 1
+        o = n * factorial(n = n - 1) when n > 1
     )
 
 )
