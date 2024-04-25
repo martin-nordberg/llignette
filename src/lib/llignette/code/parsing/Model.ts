@@ -239,12 +239,16 @@ export type StringFragment = Sourced & {
  * String literals distinguished by start/stop delimiters.
  */
 let stringLiteralTagObj = {
-    '#Model_Literal_String_BackTicked': true,
     '#Model_Literal_String_DoubleQuoted': true,
+    '#Model_Literal_String_DoubleSmartQuoted': true,
+    '#Model_Literal_String_GuillemetQuoted': true,
     '#Model_Literal_String_SingleQuoted': true,
-    '#Model_Literal_String_TripleBackTicked': true,
-    '#Model_Literal_String_TripleDoubleQuote': true,
+    '#Model_Literal_String_SingleSmartQuoted': true,
+    '#Model_Literal_String_TripleDoubleQuoted': true,
+    '#Model_Literal_String_TripleDoubleSmartQuoted': true,
+    '#Model_Literal_String_TripleGuillemetQuoted': true,
     '#Model_Literal_String_TripleSingleQuoted': true,
+    '#Model_Literal_String_TripleSingleSmartQuoted': true,
     // TODO: exclamation string?
 }
 

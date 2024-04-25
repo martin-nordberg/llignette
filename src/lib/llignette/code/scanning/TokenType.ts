@@ -88,8 +88,20 @@ export type TokenType =
     | '#TokenType_ExclamationString'
 
     | '#TokenType_DoubleQuote'
+    | '#TokenType_LeftDoubleQuote'
+    | '#TokenType_LeftGuillemet'
+    | '#TokenType_LeftSingleQuote'
+    | '#TokenType_RightDoubleQuote'
+    | '#TokenType_RightGuillemet'
+    | '#TokenType_RightSingleQuote'
     | '#TokenType_SingleQuote'
     | '#TokenType_TripleDoubleQuote'
+    | '#TokenType_TripleLeftDoubleQuote'
+    | '#TokenType_TripleLeftGuillemet'
+    | '#TokenType_TripleLeftSingleQuote'
+    | '#TokenType_TripleRightDoubleQuote'
+    | '#TokenType_TripleRightGuillemet'
+    | '#TokenType_TripleRightSingleQuote'
     | '#TokenType_TripleSingleQuote'
 
     | '#TokenType_StringFragment'
@@ -268,10 +280,34 @@ export function textOfTokenType(tt: TokenType): string {
 
         case '#TokenType_DoubleQuote':
             return '"'
+        case '#TokenType_LeftDoubleQuote':
+            return '"'
+        case '#TokenType_LeftGuillemet':
+            return '"'
+        case '#TokenType_LeftSingleQuote':
+            return "'"
+        case '#TokenType_RightDoubleQuote':
+            return '"'
+        case '#TokenType_RightGuillemet':
+            return '"'
+        case '#TokenType_RightSingleQuote':
+            return "'"
         case '#TokenType_SingleQuote':
             return "'"
         case '#TokenType_TripleDoubleQuote':
             return '"""'
+        case '#TokenType_TripleLeftGuillemet':
+            return '"""'
+        case '#TokenType_TripleLeftDoubleQuote':
+            return '"""'
+        case '#TokenType_TripleLeftSingleQuote':
+            return "'''"
+        case '#TokenType_TripleRightDoubleQuote':
+            return '"""'
+        case '#TokenType_TripleRightGuillemet':
+            return '"""'
+        case '#TokenType_TripleRightSingleQuote':
+            return "'''"
         case '#TokenType_TripleSingleQuote':
             return "'''"
 

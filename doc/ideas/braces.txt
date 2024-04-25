@@ -120,9 +120,13 @@ Name
 
 
 «The lazy fox»
+“quoted”
+‘quoted’
+
+❝The lazy fox❞
+❛The lazy fox❜
 
 “The lazy fox”
-❝The lazy fox❞
 
 
 ‹The lazy fox›

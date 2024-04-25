@@ -249,9 +249,27 @@ class Scanner {
             case '/':
                 return this.#token('#TokenType_Slash')
             case '"':
-                return this.#scanDoubleQuotedString()
-            case '\'':
-                return this.#scanSingleQuotedString()
+                return this.#scanQuotedString(
+                    '"', '"',
+                    '#TokenType_DoubleQuote', '#TokenType_DoubleQuote',
+                    '#TokenType_TripleDoubleQuote', '#TokenType_TripleDoubleQuote')
+            case "'":
+                return this.#scanQuotedString("'", "'",
+                    '#TokenType_SingleQuote', '#TokenType_SingleQuote',
+                    '#TokenType_TripleSingleQuote', '#TokenType_TripleSingleQuote')
+            case '“':
+                return this.#scanQuotedString(
+                    '“', '”',
+                    '#TokenType_LeftDoubleQuote', '#TokenType_RightDoubleQuote',
+                    '#TokenType_TripleLeftDoubleQuote', '#TokenType_TripleRightDoubleQuote')
+            case "‘":
+                return this.#scanQuotedString("‘", "’",
+                    '#TokenType_LeftSingleQuote', '#TokenType_RightSingleQuote',
+                    '#TokenType_TripleLeftSingleQuote', '#TokenType_TripleRightSingleQuote')
+            case "«":
+                return this.#scanQuotedString("«", "»",
+                    '#TokenType_LeftGuillemet', '#TokenType_RightGuillemet',
+                    '#TokenType_TripleLeftGuillemet', '#TokenType_TripleRightGuillemet')
             case '|':
                 return this.#token('#TokenType_VerticalBar')
             case '\0':
@@ -395,23 +413,6 @@ class Scanner {
 
     }
 
-    /** Scans the remainder of a string literal after the initial double quote character has been consumed. */
-    #scanDoubleQuotedString(): Token {
-
-        if (this.charAhead1 == '"' && this.charAhead2 == '"') {
-            this.#advance()
-            this.#advance()
-            this.tokens.push(this.#token('#TokenType_TripleDoubleQuote'))
-            this.markedPos = this.currentPos
-            return this.#scanTripleStringContent('"', '#TokenType_TripleDoubleQuote')
-        }
-
-        this.tokens.push(this.#token('#TokenType_DoubleQuote'))
-        this.markedPos = this.currentPos
-        return this.#scanStringContent('"', '#TokenType_DoubleQuote')
-
-    }
-
     /** Scans the remainder of an identifier after the opening letter has been consumed. */
     #scanIdentifierOrKeyword(): Token {
 
@@ -467,20 +468,27 @@ class Scanner {
 
     }
 
-    /** Scans the remainder of a string literal after the initial single quote character has been consumed. */
-    #scanSingleQuotedString(): Token {
+    /** Scans the remainder of a string literal after the initial quote character has been consumed. */
+    #scanQuotedString(
+        leftQuote: string,
+        rightQuote: string,
+        leftSingleTokenType: TokenType,
+        rightSingleTokenType: TokenType,
+        leftTripleTokenType: TokenType,
+        rightTripleTokenType: TokenType
+    ): Token {
 
-        if (this.charAhead1 == "'" && this.charAhead2 == "'") {
+        if (this.charAhead1 == leftQuote && this.charAhead2 == leftQuote) {
             this.#advance()
             this.#advance()
-            this.tokens.push(this.#token('#TokenType_TripleSingleQuote'))
+            this.tokens.push(this.#token(leftTripleTokenType))
             this.markedPos = this.currentPos
-            return this.#scanTripleStringContent("'", '#TokenType_TripleSingleQuote')
+            return this.#scanTripleStringContent(rightQuote, rightTripleTokenType)
         }
 
-        this.tokens.push(this.#token('#TokenType_SingleQuote'))
+        this.tokens.push(this.#token(leftSingleTokenType))
         this.markedPos = this.currentPos
-        return this.#scanStringContent("'", '#TokenType_SingleQuote')
+        return this.#scanStringContent(rightQuote, rightSingleTokenType)
 
     }
 

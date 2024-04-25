@@ -106,6 +106,27 @@ describe('Scanner test', () => {
         expect(result.newLineOffsets.length).toBe(1)
     })
 
+    it("scans a few double smart-quoted strings", () => {
+        const result = scan(
+            `“abc” “xyz” “bad
+ “start over”`,
+        )
+
+        expectToken(result.tokens[0], '#TokenType_LeftDoubleQuote', 0, 1)
+        expectToken(result.tokens[1], '#TokenType_StringFragment', 1, 3)
+        expectToken(result.tokens[2], '#TokenType_RightDoubleQuote', 4, 1)
+        expectToken(result.tokens[3], '#TokenType_LeftDoubleQuote', 6, 1)
+        expectToken(result.tokens[4], '#TokenType_StringFragment', 7, 3)
+        expectToken(result.tokens[5], '#TokenType_RightDoubleQuote', 10, 1)
+        expectToken(result.tokens[6], '#TokenType_LeftDoubleQuote', 12, 1)
+        expectToken(result.tokens[7], '#TokenType_UnclosedString', 13, 3)
+        expectToken(result.tokens[8], '#TokenType_LeftDoubleQuote', 18, 1)
+        expectToken(result.tokens[9], '#TokenType_StringFragment', 19, 10)
+        expectToken(result.tokens[10], '#TokenType_RightDoubleQuote', 29, 1)
+        expectToken(result.tokens[11], '#TokenType_Eof', 30, 0)
+        expect(result.newLineOffsets.length).toBe(1)
+    })
+
     it("scans a one line triple double quoted string", () => {
         const result = scan(
             `"""aaa"""`,
@@ -149,6 +170,48 @@ describe('Scanner test', () => {
         expectToken(result.tokens[8], '#TokenType_SingleQuote', 18, 1)
         expectToken(result.tokens[9], '#TokenType_StringFragment', 19, 10)
         expectToken(result.tokens[10], '#TokenType_SingleQuote', 29, 1)
+        expectToken(result.tokens[11], '#TokenType_Eof', 30, 0)
+        expect(result.newLineOffsets.length).toBe(1)
+    })
+
+    it("scans a few single smart-quoted strings", () => {
+        const result = scan(
+            `‘abc’ ‘xyz’ ‘bad
+ ‘start over’`,
+        )
+
+        expectToken(result.tokens[0], '#TokenType_LeftSingleQuote', 0, 1)
+        expectToken(result.tokens[1], '#TokenType_StringFragment', 1, 3)
+        expectToken(result.tokens[2], '#TokenType_RightSingleQuote', 4, 1)
+        expectToken(result.tokens[3], '#TokenType_LeftSingleQuote', 6, 1)
+        expectToken(result.tokens[4], '#TokenType_StringFragment', 7, 3)
+        expectToken(result.tokens[5], '#TokenType_RightSingleQuote', 10, 1)
+        expectToken(result.tokens[6], '#TokenType_LeftSingleQuote', 12, 1)
+        expectToken(result.tokens[7], '#TokenType_UnclosedString', 13, 3)
+        expectToken(result.tokens[8], '#TokenType_LeftSingleQuote', 18, 1)
+        expectToken(result.tokens[9], '#TokenType_StringFragment', 19, 10)
+        expectToken(result.tokens[10], '#TokenType_RightSingleQuote', 29, 1)
+        expectToken(result.tokens[11], '#TokenType_Eof', 30, 0)
+        expect(result.newLineOffsets.length).toBe(1)
+    })
+
+    it("scans a few guillemet-quoted strings", () => {
+        const result = scan(
+            `«abc» «xyz» «bad
+ «start over»`,
+        )
+
+        expectToken(result.tokens[0], '#TokenType_LeftGuillemet', 0, 1)
+        expectToken(result.tokens[1], '#TokenType_StringFragment', 1, 3)
+        expectToken(result.tokens[2], '#TokenType_RightGuillemet', 4, 1)
+        expectToken(result.tokens[3], '#TokenType_LeftGuillemet', 6, 1)
+        expectToken(result.tokens[4], '#TokenType_StringFragment', 7, 3)
+        expectToken(result.tokens[5], '#TokenType_RightGuillemet', 10, 1)
+        expectToken(result.tokens[6], '#TokenType_LeftGuillemet', 12, 1)
+        expectToken(result.tokens[7], '#TokenType_UnclosedString', 13, 3)
+        expectToken(result.tokens[8], '#TokenType_LeftGuillemet', 18, 1)
+        expectToken(result.tokens[9], '#TokenType_StringFragment', 19, 10)
+        expectToken(result.tokens[10], '#TokenType_RightGuillemet', 29, 1)
         expectToken(result.tokens[11], '#TokenType_Eof', 30, 0)
         expect(result.newLineOffsets.length).toBe(1)
     })

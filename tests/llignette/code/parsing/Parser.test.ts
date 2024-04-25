@@ -45,6 +45,10 @@ describe('Simple Parsing Tests', () => {
         check(`s1 = "123"`)
         check(`s2 = '789'`)
         check("s3 = 'three'")
+        check("s3 = «three»")
+        check("s3 = “three”")
+        check("s3 = ‘three’")
+
         check(`x = """
         yea
         verily
@@ -53,6 +57,19 @@ describe('Simple Parsing Tests', () => {
         yea
         verily
         '''`)
+        check(`x = «««
+        yea
+        verily
+        »»»`)
+        check(`x = “““
+        yea
+        verily
+        ”””`)
+        check(`x = ‘‘‘
+        yea
+        verily
+        ’’’`)
+
         check("x = '''\n  yea\n  verily'''")
     })
 
@@ -136,8 +153,16 @@ describe('Simple Parsing Tests', () => {
 
     it("parses documentation", () => {
         check("x :: 'a fine field' = (a = 3, b=4)")
+        check('x :: "a fine field" = (a)')
+        check('x :: «a fine field» = (a)')
+        check('x :: “a fine field” = (a)')
+        check('x :: ‘a fine field’ = (a)')
+
         check("x :: '''another one''' = (a: Int64 = 3)")
-        check('x :: "a third" = (a)')
+        check('x :: """another one""" = (a: Int64 = 3)')
+        check("x :: «««another one»»» = (a: Int64 = 3)")
+        check("x :: “““another one””” = (a: Int64 = 3)")
+        check("x :: ‘‘‘another one’’’ = (a: Int64 = 3)")
     })
 
     it("parses field references", () => {

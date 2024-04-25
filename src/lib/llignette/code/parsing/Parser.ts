@@ -292,13 +292,37 @@ class Parser {
                         this.tokensIndex += 1
                         documentation = some(this.#parseString(startSourcePos, '#TokenType_DoubleQuote', '#Model_Literal_String_DoubleQuoted'))
                         break
+                    case '#TokenType_LeftDoubleQuote':
+                        this.tokensIndex += 1
+                        documentation = some(this.#parseString(startSourcePos, '#TokenType_RightDoubleQuote', '#Model_Literal_String_DoubleSmartQuoted'))
+                        break
+                    case '#TokenType_LeftGuillemet':
+                        this.tokensIndex += 1
+                        documentation = some(this.#parseString(startSourcePos, '#TokenType_RightGuillemet', '#Model_Literal_String_GuillemetQuoted'))
+                        break
+                    case '#TokenType_LeftSingleQuote':
+                        this.tokensIndex += 1
+                        documentation = some(this.#parseString(startSourcePos, '#TokenType_RightSingleQuote', '#Model_Literal_String_DoubleSmartQuoted'))
+                        break
                     case '#TokenType_SingleQuote':
                         this.tokensIndex += 1
                         documentation = some(this.#parseString(startSourcePos, '#TokenType_SingleQuote', '#Model_Literal_String_DoubleQuoted'))
                         break
                     case '#TokenType_TripleDoubleQuote':
                         this.tokensIndex += 1
-                        documentation = some(this.#parseString(startSourcePos, '#TokenType_TripleDoubleQuote', '#Model_Literal_String_TripleDoubleQuote'))
+                        documentation = some(this.#parseString(startSourcePos, '#TokenType_TripleDoubleQuote', '#Model_Literal_String_TripleDoubleQuoted'))
+                        break
+                    case '#TokenType_TripleLeftDoubleQuote':
+                        this.tokensIndex += 1
+                        documentation = some(this.#parseString(startSourcePos, '#TokenType_TripleRightDoubleQuote', '#Model_Literal_String_TripleDoubleSmartQuoted'))
+                        break
+                    case '#TokenType_TripleLeftGuillemet':
+                        this.tokensIndex += 1
+                        documentation = some(this.#parseString(startSourcePos, '#TokenType_TripleRightGuillemet', '#Model_Literal_String_TripleGuillemetQuoted'))
+                        break
+                    case '#TokenType_TripleLeftSingleQuote':
+                        this.tokensIndex += 1
+                        documentation = some(this.#parseString(startSourcePos, '#TokenType_TripleRightSingleQuote', '#Model_Literal_String_TripleSingleSmartQuoted'))
                         break
                     case '#TokenType_TripleSingleQuote':
                         this.tokensIndex += 1
@@ -670,11 +694,20 @@ class Parser {
             case '#TokenType_LeftBracket':
                 return this.#parseArrayLiteral(sourcePos)
 
+            case '#TokenType_LeftDoubleQuote':
+                return this.#parseString(sourcePos, '#TokenType_RightDoubleQuote', '#Model_Literal_String_DoubleSmartQuoted')
+
+            case '#TokenType_LeftGuillemet':
+                return this.#parseString(sourcePos, '#TokenType_RightGuillemet', '#Model_Literal_String_GuillemetQuoted')
+
             case '#TokenType_LeftMustache':
                 return this.#parseInterpolatedIdentifier(sourcePos)
 
             case '#TokenType_LeftParenthesis':
                 return this.#parseParenthesizedExpression(sourcePos)
+
+            case '#TokenType_LeftSingleQuote':
+                return this.#parseString(sourcePos, '#TokenType_RightSingleQuote', '#Model_Literal_String_SingleSmartQuoted')
 
             case '#TokenType_LessThan':
                 const ltOperand = this.parseExprWithBindingPower(0)
@@ -705,7 +738,16 @@ class Parser {
                 }
 
             case '#TokenType_TripleDoubleQuote':
-                return this.#parseString(sourcePos, '#TokenType_TripleDoubleQuote', '#Model_Literal_String_TripleDoubleQuote')
+                return this.#parseString(sourcePos, '#TokenType_TripleDoubleQuote', '#Model_Literal_String_TripleDoubleQuoted')
+
+            case '#TokenType_TripleLeftDoubleQuote':
+                return this.#parseString(sourcePos, '#TokenType_TripleRightDoubleQuote', '#Model_Literal_String_TripleDoubleSmartQuoted')
+
+            case '#TokenType_TripleLeftGuillemet':
+                return this.#parseString(sourcePos, '#TokenType_TripleRightGuillemet', '#Model_Literal_String_TripleGuillemetQuoted')
+
+            case '#TokenType_TripleLeftSingleQuote':
+                return this.#parseString(sourcePos, '#TokenType_TripleRightSingleQuote', '#Model_Literal_String_TripleSingleSmartQuoted')
 
             case '#TokenType_TripleSingleQuote':
                 return this.#parseString(sourcePos, '#TokenType_TripleSingleQuote', '#Model_Literal_String_TripleSingleQuoted')
