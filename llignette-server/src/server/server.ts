@@ -1,14 +1,10 @@
 import ws from '@fastify/websocket';
 import { fastifyTRPCPlugin } from '@trpc/server/adapters/fastify';
 import fastify from 'fastify';
-import { appRouter } from './router';
-import { createContext } from './router/context';
-
-export interface ServerOptions {
-  dev?: boolean;
-  port?: number;
-  prefix?: string;
-}
+import { appRouter } from '../shared/router';
+import { createContext } from '../shared/router/context';
+import cors from '@fastify/cors'
+import {ServerOptions} from "../shared/config/server-options";
 
 export function createServer(opts: ServerOptions) {
   const dev = opts.dev ?? true;
@@ -16,7 +12,12 @@ export function createServer(opts: ServerOptions) {
   const prefix = opts.prefix ?? '/trpc';
   const server = fastify({ logger: dev });
 
+  void server.register(cors, {
+    origin: "http://localhost:5173"
+  })
+
   void server.register(ws);
+
   void server.register(fastifyTRPCPlugin, {
     prefix,
     useWSS: true,
@@ -30,6 +31,7 @@ export function createServer(opts: ServerOptions) {
   const stop = async () => {
     await server.close();
   };
+
   const start = async () => {
     try {
       await server.listen({ port });
