@@ -2,7 +2,8 @@
     import {
         createTRPCClient,
         httpBatchLink,
-        splitLink, unstable_httpSubscriptionLink,
+        splitLink,
+        unstable_httpSubscriptionLink,
     } from '@trpc/client';
     import superjson from 'superjson';
     import {serverConfig} from '$shared/config/server-config';
@@ -64,11 +65,8 @@
 
     }
 
-    void start();
-
 </script>
 
 <h1>Welcome to Llignette Studio</h1>
-<p>Visit <a href="https://svelte.dev/docs/kit">svelte.dev/docs/kit</a> to read the documentation</p>
 
-<button on:click={()=>start()}>A button, ha</button>
+<button class="button is-small" on:click={()=>start()}>A Button</button>
