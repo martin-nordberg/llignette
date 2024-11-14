@@ -1,4 +1,3 @@
-import ws from '@fastify/websocket';
 import { fastifyTRPCPlugin } from '@trpc/server/adapters/fastify';
 import fastify from 'fastify';
 import { appRouter } from '../shared/router';
@@ -16,11 +15,8 @@ export function createServer(opts: ServerOptions) {
     origin: "http://localhost:5173"
   })
 
-  void server.register(ws);
-
   void server.register(fastifyTRPCPlugin, {
     prefix,
-    useWSS: true,
     trpcOptions: { router: appRouter, createContext },
   });
 

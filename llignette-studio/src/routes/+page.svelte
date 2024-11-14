@@ -1,34 +1,8 @@
 <script lang="ts">
-    import {
-        createTRPCClient,
-        httpBatchLink,
-        splitLink,
-        unstable_httpSubscriptionLink,
-    } from '@trpc/client';
-    import superjson from 'superjson';
-    import {serverConfig} from '$shared/config/server-config';
-    import type {AppRouter} from '$shared/router';
+    import type { PageData } from './$types';
+    import {trpc} from "$lib/trpc";
 
     async function start() {
-        const {port, prefix} = serverConfig;
-        const urlEnd = `localhost:${port}${prefix}`;
-        const trpc = createTRPCClient<AppRouter>({
-            links: [
-                splitLink({
-                    condition(op) {
-                        return op.type === 'subscription';
-                    },
-                    true: unstable_httpSubscriptionLink({
-                        url: `http://${urlEnd}`,
-                        transformer: superjson
-                    }),
-                    false: httpBatchLink({
-                        url: `http://${urlEnd}`,
-                        transformer: superjson,
-                    }),
-                }),
-            ],
-        });
 
         const version = await trpc.api.version.query();
         console.log('>>> anon:version:', version);
@@ -49,7 +23,7 @@
                     console.log('>>> anon:sub:randomNumber:received:', data);
                     randomNumberCount++;
 
-                    if (randomNumberCount > 3) {
+                    if (randomNumberCount > 10) {
                         sub.unsubscribe();
                         resolve();
                     }
@@ -65,8 +39,12 @@
 
     }
 
+    let { data }: { data: PageData } = $props();
 </script>
 
 <h1>Welcome to Llignette Studio</h1>
 
-<button class="button is-small" on:click={()=>start()}>A Button</button>
+<button class="button is-small" onclick={()=>start()}>A Button</button>
+
+{data.hello.text}<br>
+{data.hello.stuff}

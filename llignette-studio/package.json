@@ -20,8 +20,7 @@
 	},
 	"dependencies": {
 		"@trpc/client": "^11.0.0-rc.608",
-		"superjson": "^2.2.1",
-		"ws": "^8.18.0"
+		"superjson": "^2.2.1"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-static": "^3.0.6",
