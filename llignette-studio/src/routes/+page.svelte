@@ -1,8 +1,8 @@
 <script lang="ts">
-    import type { PageData } from './$types';
     import {trpc} from "$lib/trpc";
+    import type {OrganizationsByUuid} from "$shared/router/routers/queries/organizations";
 
-    async function start() {
+    async function callTrpcSample() {
 
         const version = await trpc.api.version.query();
         console.log('>>> anon:version:', version);
@@ -39,12 +39,55 @@
 
     }
 
-    let { data }: { data: PageData } = $props();
+    type Model = {
+        hello: { text: string, stuff: string },
+        organizations: OrganizationsByUuid,
+        plenty: string
+    }
+
+    let model: Model = {
+        hello: {text: "", stuff: ""},
+        organizations: {},
+        plenty: ""
+    }
+
+    const init = async () => {
+
+        const hello = await trpc.api.hello.query();
+        console.log('>>> anon:hello:', hello);
+
+        const organizations = await trpc.organizations.list.query();
+        console.log('>>> anon:organizations:', organizations);
+
+        model = {
+            hello,
+            organizations,
+            plenty: "bonus"
+        };
+
+        return true
+    };
+
 </script>
 
 <h1>Welcome to Llignette Studio</h1>
 
-<button class="button is-small" onclick={()=>start()}>A Button</button>
+<button class="button is-small" onclick={()=>callTrpcSample()}>A Button</button>
 
-{data.hello.text}<br>
-{data.hello.stuff}
+{#await init()}
+    <p>Loading ...</p>
+{:then _ready}
+
+    {model.hello.text}<br>
+    {model.hello.stuff}<br>
+    {model.plenty}
+
+    <ul>
+        {#each Object.entries(model.organizations) as [key, value]}
+            <li><a href="./organizations/{key}">{value.name}</a></li>
+        {/each}
+    </ul>
+
+{:catch error}
+    <p style="color: red">{error.message}</p>
+{/await}

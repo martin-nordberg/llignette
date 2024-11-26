@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@fastify/cors": "^10.0.1",
+    "@paralleldrive/cuid2": "^2.2.2",
     "@trpc/client": "npm:@trpc/client@next",
     "@trpc/server": "npm:@trpc/server@next",
     "fastify": "^5.1.0",

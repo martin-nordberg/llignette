@@ -1,12 +1,13 @@
 <script lang="ts">
     // TODO import Header from './Header.svelte';
     import '../css/lignette-studio.scss';
+    import NavBar from "$lib/components/NavBar.svelte";
 
     let {children} = $props();
 </script>
 
 <div class="app">
-    <!-- TODO   <Header />-->
+    <NavBar />
 
     <main>
         {@render children()}

@@ -16,15 +16,20 @@ $beige-lighter: #eff0eb;
 );
 
 // Override Sass variables from the /form folder
+
+// Import the components you need
+@forward "bulma/sass/components/breadcrumb";
+@use "bulma/sass/components/navbar" with (
+  $navbar-height: 2rem
+);
+
+// Example
 @use "bulma/sass/form" with (
   $input-shadow: none
 );
-
-// Import the components you need
 @forward "bulma/sass/base";
 @forward "bulma/sass/components/card";
 @forward "bulma/sass/components/modal";
-@forward "bulma/sass/components/navbar";
 @forward "bulma/sass/elements/button";
 @forward "bulma/sass/elements/icon";
 @forward "bulma/sass/elements/content";
