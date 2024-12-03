@@ -2,7 +2,7 @@ import {apiRouter} from './routers/api';
 import {postsRouter} from './routers/posts';
 import {subRouter} from './routers/sub';
 import {router} from './trpc';
-import {organizationsRouter} from "./routers/queries/organizations";
+import {organizationsRouter} from "./routers/queries/organizationsRouter";
 
 export const appRouter = router({
     organizations: organizationsRouter,

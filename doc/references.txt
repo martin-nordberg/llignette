@@ -1,0 +1,7 @@
+
+SvelteKit SPA & Docker
+https://lucdev.net/blog/sveltekit-spa/
+
+ArangoDB - Multimodal database
+
+Mermaid.js - Graphs from plain text

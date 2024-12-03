@@ -1,4 +1,4 @@
-import {Id, Node} from "../core/nodes/Node";
+import {Id, Node} from "../nodes/core/Node";
 import {check, checkNonNull} from "../../../common/util/Assertions";
 
 /** A map of nodes indexed by ID. */
@@ -9,17 +9,21 @@ export class NodesById<IdBrand, T extends Node<IdBrand>> {
     get(nodeId: Id<IdBrand>): T {
         const result = this.map.get(nodeId)
 
-        checkNonNull(result, "Node must be present in the model.")
-        check(!result.isDeleted, "Node must not have been previously deleted.")
+        checkNonNull(result, () => `Node with ID '${nodeId}' must be present in the model.`)
+        check(!result.isDeleted, () => `Node with ID '${nodeId}' must not have been previously deleted.`)
 
         return result
+    }
+
+    getAll(): T[] {
+        return this.map.values().toArray()
     }
 
     getDeleted(nodeId: Id<IdBrand>): T {
         const result = this.map.get(nodeId)
 
-        checkNonNull(result, "Node must be present in the model.")
-        check(result.isDeleted, "Node must have been previously deleted.")
+        checkNonNull(result, () => `Node with ID '${nodeId}' must be present in the model.`)
+        check(result.isDeleted, () => `Node with ID '${nodeId}' must have been previously deleted.`)
 
         return result
     }

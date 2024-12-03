@@ -1,3 +1,0 @@
-
-SvelteKit SPA & Docker
-https://lucdev.net/blog/sveltekit-spa/

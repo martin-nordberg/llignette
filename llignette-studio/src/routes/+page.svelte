@@ -1,6 +1,6 @@
 <script lang="ts">
     import {trpc} from "$lib/trpc";
-    import type {OrganizationsByUuid} from "$shared/router/routers/queries/organizations";
+    import type {OrganizationsByUuid} from "$shared/router/routers/queries/organizationsRouter";
 
     async function callTrpcSample() {
 
@@ -56,7 +56,7 @@
         const hello = await trpc.api.hello.query();
         console.log('>>> anon:hello:', hello);
 
-        const organizations = await trpc.organizations.list.query();
+        const organizations = await trpc.organizations.getAll.query();
         console.log('>>> anon:organizations:', organizations);
 
         model = {

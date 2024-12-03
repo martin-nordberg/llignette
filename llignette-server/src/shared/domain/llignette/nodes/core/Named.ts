@@ -15,7 +15,7 @@ export type Name = Branded<NameStr, 'Name'>
  * Validates and brands a string to become a name.
  * @param name the raw name string
  */
-export function toName(name: string): Name {
+export function toName(name: unknown): Name {
     return nameSchema.parse(name) as Name
 }
 
