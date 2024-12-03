@@ -10,6 +10,6 @@ export function structureEventFromJson(eventJson: ModelEventJson): ModelEvent {
         case 'ProjectOwnership':
             return projectOwnershipEventFromJson(eventJson);
         default:
-            throw new Error(`Unrecognized event name: '${eventJson.kind}'.`)
+            throw new Error(`Unrecognized event kind: '${eventJson.kind}'.`)
     }
 }

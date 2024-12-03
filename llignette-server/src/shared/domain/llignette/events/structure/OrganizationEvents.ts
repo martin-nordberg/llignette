@@ -149,16 +149,16 @@ export function organizationEventFromJson(eventJson: ModelEventJson): ModelEvent
             return new DeleteOrganization(
                 toOrganizationId(eventJson.organizationId),
             )
-        case 'RenameOrganization':
+        case 'Rename':
             return new RenameOrganization(
                 toOrganizationId(eventJson.organizationId),
                 toName(eventJson.name)
             )
-        case 'UndeleteOrganization':
+        case 'Undelete':
             return new UndeleteOrganization(
                 toOrganizationId(eventJson.organizationId)
             )
         default:
-            throw new Error(`Unrecognized event name: '${eventJson.kind}'.`)
+            throw new Error(`Unrecognized event kind: '${eventJson.kind}'.`)
     }
 }

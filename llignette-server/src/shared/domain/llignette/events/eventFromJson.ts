@@ -7,6 +7,6 @@ export function eventFromJson(eventJson: ModelEventJson): ModelEvent {
         case 'structure':
             return structureEventFromJson(eventJson);
         default:
-            throw new Error(`Unrecognized event name: '${eventJson.kind}'.`)
+            throw new Error(`Unrecognized event kind: '${eventJson.kind}'.`)
     }
 }
