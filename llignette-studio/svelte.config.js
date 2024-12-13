@@ -13,7 +13,7 @@ const config = {
 		}),
 
 		alias: {
-			'$shared': '../llignette-server/src/shared'
+			'$shared': '../llignette-shared/src/shared'
 		}
 	}
 };
