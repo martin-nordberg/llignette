@@ -1,4 +1,4 @@
-import {Branded} from "../../../../common/util/Branded";
+import {Branded} from "../../../util/Branded";
 
 
 /** Unique branded ID for a specific concrete node type. */

@@ -3,12 +3,12 @@ import {postsRouter} from './routers/posts';
 import {subRouter} from './routers/sub';
 import {router} from './trpc';
 import {makeOrganizationsRouter} from "./routers/queries/organizationsRouter";
-import {IOrganizationsService} from "../domain/llignette/services/structure/OrganizationsService";
+import {IModelService} from "../llignette/services/ModelService";
 
 
-export function makeAppRouter(svc: IOrganizationsService) {
+export function makeAppRouter(svc: IModelService) {
     return router({
-        organizations: makeOrganizationsRouter(svc),
+        organizations: makeOrganizationsRouter(svc.organizationsService),
 
         posts: postsRouter,
         sub: subRouter,

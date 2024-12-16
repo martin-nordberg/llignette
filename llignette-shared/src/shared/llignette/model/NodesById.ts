@@ -1,5 +1,5 @@
 import {Id, Node} from "../nodes/core/Node";
-import {check, checkNonNull} from "../../../common/util/Assertions";
+import {check, checkNonNull} from "../../util/Assertions";
 
 /** A map of nodes indexed by ID. */
 export class NodesById<IdBrand, T extends Node<IdBrand>> {

@@ -1,7 +1,7 @@
 import {Model} from "../../model/Model";
 import {OrganizationId, toOrganizationId} from "../../nodes/structure/Organization";
 import {ProjectId, toProjectId} from "../../nodes/structure/Project";
-import {check, checkNonNull} from "../../../../common/util/Assertions";
+import {check, checkNonNull} from "../../../util/Assertions";
 import {ModelEventJson, ModelEvent} from "../../model/ModelEvent";
 
 /** A model edit to transfer ownership of a project from one organization to another. */

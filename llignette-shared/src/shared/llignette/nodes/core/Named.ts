@@ -1,6 +1,6 @@
 import {Described} from "./Described";
 import {z} from 'zod';
-import {Branded} from "../../../../common/util/Branded";
+import {Branded} from "../../../util/Branded";
 
 
 /** Zod schema for name validation. */

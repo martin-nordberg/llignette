@@ -1,5 +1,5 @@
 import {Model} from "../../model/Model";
-import {checkNonNull} from "../../../../common/util/Assertions";
+import {checkNonNull} from "../../../util/Assertions";
 import {ModelEventJson, ModelEvent} from "../../model/ModelEvent";
 import {Name, toName} from "../../nodes/core/Named";
 import {Organization, OrganizationId, toOrganizationId} from "../../nodes/structure/Organization";

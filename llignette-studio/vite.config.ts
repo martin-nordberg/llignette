@@ -15,6 +15,10 @@ export default defineConfig({
 
     plugins: [sveltekit()],
 
+    preview: {
+        port: 5173
+    },
+
     test: {
         include: ['src/**/*.{test,spec}.{js,ts}']
     }
