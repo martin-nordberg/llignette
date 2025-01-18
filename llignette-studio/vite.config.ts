@@ -20,6 +20,9 @@ export default defineConfig({
     },
 
     test: {
-        include: ['src/**/*.{test,spec}.{js,ts}']
+        include: [
+            'src/**/*.{test,spec}.{js,ts}',
+            '../llignette-shared/vitest/**/*.{test,spec}.{js,ts}'
+        ]
     }
 });

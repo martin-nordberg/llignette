@@ -6,8 +6,11 @@
     "strict": true,
     "moduleResolution": "node",
     "noEmit": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "paths": {
+      "$shared/*": ["../llignette-shared/src/*"]
+    }
   },
-  "include": ["src"],
+  "include": ["src", "vitest"],
   "exclude": ["node_modules"]
 }

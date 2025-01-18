@@ -9,7 +9,7 @@
     "skipLibCheck": true,
     "baseUrl": "./",
     "paths": {
-      "$shared/*": ["../llignette-shared/src/shared/*"]
+      "$shared/*": ["../llignette-shared/src/*"]
     }
   },
   "include": ["src", "../llignette-shared/src"],
