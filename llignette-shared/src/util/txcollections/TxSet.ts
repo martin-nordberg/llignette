@@ -51,7 +51,7 @@ export class TxSet<T extends string> {
     }
 
     /** Adds the given value. Starts a change sequence if needed. */
-    add(tx: Tx, value: T)   {
+    add(tx: Tx, value: T) {
         this.setFlag(tx, value, true)
     }
 
@@ -62,7 +62,6 @@ export class TxSet<T extends string> {
 
     /** Checks whether the set contains a given value. */
     has(value: T): boolean {
-
         // First look in our own edition.
         let result = this.values[value]
 
@@ -76,7 +75,6 @@ export class TxSet<T extends string> {
 
     /** Returns the changed presence of given value in the set. */
     hasInTx(tx: Tx, value: T): boolean {
-
         check(!Object.isFrozen(this.values), () => 'Cannot read changes after they have been committed.')
 
         // Look in the next edition, if present (i.e. the value has not been removed by tx), otherwise our own.

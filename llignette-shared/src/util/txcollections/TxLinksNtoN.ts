@@ -3,7 +3,9 @@ import {addLink, AdjacencyList, removeLink} from "$shared/util/txcollections/Adj
 import {MapEdition} from "$shared/util/txcollections/MapEdition";
 import {Tx} from "$shared/util/txcollections/Tx";
 
-
+/**
+ * A transactional many-to-many relationship.
+ */
 export class TxLinksNtoN<Tail extends string, Head extends string> {
 
     constructor(
@@ -80,6 +82,7 @@ export class TxLinksNtoN<Tail extends string, Head extends string> {
         this.next.backwardLinks[head] = removeLink(this.next.backwardLinks[head], tail)
     }
 
+    /** Iterates over each head reachable from a given tail. */
     forEachHead(tail: Tail, callback: (head: Head) => void) {
         const callbackLink = (link: AdjacencyList<Head> | null) => {
             if (link == null) {
@@ -100,6 +103,7 @@ export class TxLinksNtoN<Tail extends string, Head extends string> {
         }
     }
 
+    /** Iterates over each tail reachable from a given head. */
     forEachTail(head: Head, callback: (tail: Tail) => void) {
         const callbackLink = (link: AdjacencyList<Tail> | null) => {
             if (link == null) {

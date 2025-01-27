@@ -3,7 +3,9 @@ import {addLink, AdjacencyList, removeLink} from "$shared/util/txcollections/Adj
 import {MapEdition} from "$shared/util/txcollections/MapEdition";
 import {Tx} from "$shared/util/txcollections/Tx";
 
-
+/**
+ * A transactional 1-to-many relationship.
+ */
 export class TxLinks1toN<Tail extends string, Head extends string> {
 
     constructor(
@@ -101,6 +103,7 @@ export class TxLinks1toN<Tail extends string, Head extends string> {
         this.next.backwardLinks[head] = null
     }
 
+    /** Iterates over each head reachable from given tail. */
     forEachHead(tail: Tail, callback: (head: Head) => void) {
         let headsAlreadyVisited = new Set<Head>()
 
@@ -124,6 +127,7 @@ export class TxLinks1toN<Tail extends string, Head extends string> {
         }
     }
 
+    /** Returns the tail for given head. */
     getTail(head: Head): Tail | null {
 
         // First look in our own edition.
@@ -137,6 +141,7 @@ export class TxLinks1toN<Tail extends string, Head extends string> {
         return result || null
     }
 
+    /** Returns the tail for given head, accounting for changes from the open transaction. */
     getTailInTx(tx: Tx, head: Head): Tail | null {
 
         check(!Object.isFrozen(this.forwardLinks), () => 'Cannot read changes after they have been committed.')

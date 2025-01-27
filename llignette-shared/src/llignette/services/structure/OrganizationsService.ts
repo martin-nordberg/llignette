@@ -11,7 +11,8 @@ export interface IOrganizationsService {
 /** Basic organizations service implementation that operates on a model instance. */
 export class OrganizationsService implements IOrganizationsService {
 
-    constructor(private readonly model: Model){}
+    constructor(private readonly model: Model) {
+    }
 
     queryAllOrganizations(): Organization[] {
         let result: Organization[] = []
@@ -19,13 +20,13 @@ export class OrganizationsService implements IOrganizationsService {
         this.model.currentEdition.allOrganizations.forEachHead(
             this.model.currentEdition.modelId,
             orgId => {
-            result.push({
-                id: orgId,
-                name: this.model.currentEdition.names.get(orgId)!,
-                summary: this.model.currentEdition.summaries.get(orgId),
-                description: this.model.currentEdition.descriptions.get(orgId),
+                result.push({
+                    id: orgId,
+                    name: this.model.currentEdition.names.get(orgId)!,
+                    summary: this.model.currentEdition.summaries.get(orgId),
+                    description: this.model.currentEdition.descriptions.get(orgId),
+                })
             })
-        })
 
         result.sort((o1, o2) => o1.name.localeCompare(o2.name))
         return result

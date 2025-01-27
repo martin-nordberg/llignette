@@ -9,12 +9,6 @@ export function check(condition: boolean, message: () => string): void {
     }
 }
 
-export function checkHasKey<K, V>(map: Map<K, V>, key: K, message: () => string) {
-    if (!map.has(key)) {
-        fail(message())
-    }
-}
-
 /**
  * Assertion of a non-null value.
  * @param value a value that must not be null or undefined
@@ -26,12 +20,6 @@ export function checkNonNull<T>(value: T | undefined, message: () => string): as
     }
 }
 
-
-export function checkNotHasKey<K, V>(map: Map<K, V>, key: K, message: () => string) {
-    if (map.has(key)) {
-        fail(message())
-    }
-}
 
 
 export function fail(message: string): never {

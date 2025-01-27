@@ -62,7 +62,6 @@ function removeProject(tx: Tx, priorEdition: ModelEdition, action: RemoveProject
 }
 
 
-
 export function dispatchStructureAction(tx: Tx, priorEdition: ModelEdition, action: ModelAction) {
     switch (action.kind) {
         case 'llignette.structure.create-organization':

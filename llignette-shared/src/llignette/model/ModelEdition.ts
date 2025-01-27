@@ -39,7 +39,7 @@ export function makeEmptyModelEdition(tx: Tx, modelId: ModelId): ModelEdition {
 }
 
 /** Commits model changes in progress and returns the new edition. */
-export function commitChanges(tx:Tx, modelEdition: ModelEdition): ModelEdition {
+export function commitChanges(tx: Tx, modelEdition: ModelEdition): ModelEdition {
     return {
         modelId: modelEdition.modelId,
         organizationIds: modelEdition.organizationIds.withChangesCommitted(tx),
