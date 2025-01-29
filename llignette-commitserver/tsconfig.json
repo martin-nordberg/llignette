@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "lib": ["esnext"],
+    "target": "esnext",
+    "esModuleInterop": true,
+    "strict": true,
+    "moduleResolution": "node",
+    "noEmit": true,
+    "skipLibCheck": true,
+    "baseUrl": "./",
+    "paths": {
+      "$shared/*": ["../llignette-shared/src/*"]
+    }
+  },
+  "include": ["src", "../llignette-shared/src"],
+  "exclude": ["node_modules"]
+}
