@@ -12,8 +12,13 @@ describe('Organization actions test', () => {
         const org1Id = makeOrganizationId()
         model = dispatch(makeTx(), model,{
             kind: 'llignette.structure.create-organization',
-            name: "org1",
-            id: org1Id
+            changes: [
+                {
+                    name: "org1",
+                    id: org1Id
+                }
+            ]
+
         })
 
         expect(model.currentEdition.organizationIds.has(org1Id)).toBeTruthy()
@@ -21,31 +26,51 @@ describe('Organization actions test', () => {
 
         model = dispatch(makeTx(), model,{
             kind: 'llignette.core.rename',
-            name: "orgOne",
-            id: org1Id
+            changes: [
+                {
+                    name: "orgOne",
+                    id: org1Id
+                }
+            ]
+
         })
 
         expect(model.currentEdition.names.get(org1Id)).toEqual("orgOne")
 
         model = dispatch(makeTx(), model,{
             kind: 'llignette.core.summarize',
-            summary: "The first organization",
-            id: org1Id
+            changes: [
+                {
+                    summary: "The first organization",
+                    id: org1Id
+                }
+            ]
+
         })
 
         expect(model.currentEdition.summaries.get(org1Id)).toEqual("The first organization")
 
         model = dispatch(makeTx(), model,{
             kind: 'llignette.core.describe',
-            description: "The first organization\nwith extra lines of text",
-            id: org1Id
+            changes: [
+                {
+                    description: "The first organization\nwith extra lines of text",
+                    id: org1Id
+                }
+            ]
+
         })
 
         expect(model.currentEdition.descriptions.get(org1Id)).toEqual("The first organization\nwith extra lines of text")
 
         model = dispatch(makeTx(), model,{
             kind: 'llignette.core.remove-summary',
-            id: org1Id
+            changes: [
+                {
+                    id: org1Id
+                }
+            ]
+
         })
 
         expect(model.currentEdition.summaries.get(org1Id)).toBeNull()
@@ -53,7 +78,12 @@ describe('Organization actions test', () => {
 
         model = dispatch(makeTx(), model,{
             kind: 'llignette.core.remove-description',
-            id: org1Id
+            changes: [
+                {
+                    id: org1Id
+                }
+            ]
+
         })
 
         expect(model.currentEdition.descriptions.get(org1Id)).toBeNull()
