@@ -8,12 +8,12 @@ export type ModelId = string & {
 }
 
 /** Validates the format of a model ID. */
-export const modelIdSchema =
+const modelIdSchema =
     z.string({message: "Model ID must be a string."})
         .trim()
         .cuid2("Model ID must be in CUID2 format.")
 
-/** Constructs an organization ID from a string. */
+/** Constructs a model ID from a string. */
 export function toModelId(id: unknown) {
     return modelIdSchema.parse(id) as ModelId
 }

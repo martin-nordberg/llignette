@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import {describe, it, expect} from 'vitest';
 import {makeEmptyModel} from "$shared/llignette/model/Model";
 import {makeOrganizationId} from "$shared/llignette/nodes/structure/Organization";
 import {dispatch} from "$shared/llignette/model/ModelAction";
@@ -10,21 +10,20 @@ describe('Organization actions test', () => {
         let model = makeEmptyModel(makeTx(), toModelId('mdl0'))
 
         const org1Id = makeOrganizationId()
-        model = dispatch(makeTx(), model,{
-            kind: 'llignette.structure.create-organization',
+        model = dispatch(makeTx(), model, {
+            kind: 'llignette.structure.organization.create',
             changes: [
                 {
                     name: "org1",
                     id: org1Id
                 }
             ]
-
         })
 
         expect(model.currentEdition.organizationIds.has(org1Id)).toBeTruthy()
         expect(model.currentEdition.names.get(org1Id)).toEqual("org1")
 
-        model = dispatch(makeTx(), model,{
+        model = dispatch(makeTx(), model, {
             kind: 'llignette.core.rename',
             changes: [
                 {
@@ -32,12 +31,11 @@ describe('Organization actions test', () => {
                     id: org1Id
                 }
             ]
-
         })
 
         expect(model.currentEdition.names.get(org1Id)).toEqual("orgOne")
 
-        model = dispatch(makeTx(), model,{
+        model = dispatch(makeTx(), model, {
             kind: 'llignette.core.summarize',
             changes: [
                 {
@@ -45,12 +43,11 @@ describe('Organization actions test', () => {
                     id: org1Id
                 }
             ]
-
         })
 
         expect(model.currentEdition.summaries.get(org1Id)).toEqual("The first organization")
 
-        model = dispatch(makeTx(), model,{
+        model = dispatch(makeTx(), model, {
             kind: 'llignette.core.describe',
             changes: [
                 {
@@ -58,32 +55,29 @@ describe('Organization actions test', () => {
                     id: org1Id
                 }
             ]
-
         })
 
         expect(model.currentEdition.descriptions.get(org1Id)).toEqual("The first organization\nwith extra lines of text")
 
-        model = dispatch(makeTx(), model,{
+        model = dispatch(makeTx(), model, {
             kind: 'llignette.core.remove-summary',
             changes: [
                 {
                     id: org1Id
                 }
             ]
-
         })
 
         expect(model.currentEdition.summaries.get(org1Id)).toBeNull()
         expect(model.priorEdition.summaries.get(org1Id)).toEqual("The first organization")
 
-        model = dispatch(makeTx(), model,{
+        model = dispatch(makeTx(), model, {
             kind: 'llignette.core.remove-description',
             changes: [
                 {
                     id: org1Id
                 }
             ]
-
         })
 
         expect(model.currentEdition.descriptions.get(org1Id)).toBeNull()
