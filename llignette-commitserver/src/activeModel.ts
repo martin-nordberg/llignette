@@ -2,34 +2,39 @@ import {makeEmptyModel} from "$shared/llignette/model/Model";
 import {makeTx} from "$shared/util/txcollections/Tx";
 import {toModelId} from "$shared/llignette/model/ModelId";
 import {makeOrganizationId} from "$shared/llignette/nodes/structure/Organization";
-import {dispatch} from "$shared/llignette/model/ModelAction";
 import {IModelService} from "$shared/llignette/services/ModelService";
 import {OrganizationsService} from "$shared/llignette/services/structure/OrganizationsService";
-
-
-
+import {extendModelOnBranch} from "$shared/llignette/model/dispatchAction";
 
 
 export let activeModel = makeEmptyModel(makeTx(), toModelId('mdl0'))
 
-activeModel = dispatch(makeTx(), activeModel,{
-    kind: 'llignette.structure.create-organization',
-    name: "Alpha",
-    id: makeOrganizationId()
-})
-activeModel = dispatch(makeTx(), activeModel,{
-    kind: 'llignette.structure.create-organization',
-    name: "Beta",
-    id: makeOrganizationId()
-})
-activeModel = dispatch(makeTx(), activeModel,{
-    kind: 'llignette.structure.create-organization',
-    name: "Gamma",
-    id: makeOrganizationId()
-})
+activeModel = extendModelOnBranch(
+    makeTx(),
+    activeModel,
+    "main",
+    {
+        kind: 'llignette.structure.organization.create',
+        changes: [
+            {
+                name: "Alpha",
+                id: makeOrganizationId()
+            }, {
+                name: "Beta",
+                id: makeOrganizationId()
+            }, {
+                name: "Charlie",
+                id: makeOrganizationId()
+            }, {
+                name: "Delta",
+                id: makeOrganizationId()
+            }
+        ]
+    }
+)
 
 
 export const activeModelService: IModelService = {
-    organizationsService: new OrganizationsService(activeModel)
+    organizationsService: new OrganizationsService(activeModel, "main")
 }
 

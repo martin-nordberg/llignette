@@ -15,6 +15,7 @@
     "test-start": "start-server-and-test 'node dist/server' http-get://localhost:2022 'node dist/client'"
   },
   "dependencies": {
+    "@js-joda/core": "^5.6.4",
     "@paralleldrive/cuid2": "^2.2.2",
     "@trpc/server": "^11.0.0-rc.660",
     "fastify": "^5.1.0",

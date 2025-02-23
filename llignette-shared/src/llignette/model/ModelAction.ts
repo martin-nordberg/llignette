@@ -14,16 +14,6 @@ export type ModelActionJson = {
     readonly changes: ModelChangeJson[]
 }
 
-
-/** Top level dispatch function for model actions. */
-export function dispatch(tx: Tx, model: Model, action: ModelActionJson): Model {
-    dispatchModelAction(tx, model.currentEdition, action)
-    return {
-        priorEdition: model.currentEdition,
-        currentEdition: commitChanges(tx, model.currentEdition)
-    }
-}
-
 /** Generic model action. */
 export type ModelAction<kindStr, Change> = {
     readonly kind: kindStr,

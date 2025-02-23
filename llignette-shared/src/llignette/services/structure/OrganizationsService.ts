@@ -11,22 +11,28 @@ export interface IOrganizationsService {
 /** Basic organizations service implementation that operates on a model instance. */
 export class OrganizationsService implements IOrganizationsService {
 
-    constructor(private readonly model: Model) {
+    constructor(
+        private readonly model: Model,
+        private readonly branchName: string
+    ) {
     }
 
     queryAllOrganizations(): Organization[] {
         let result: Organization[] = []
 
-        this.model.currentEdition.allOrganizations.forEachHead(
-            this.model.currentEdition.modelId,
+        const modelEdition = this.model.branches[this.branchName].editions.item
+
+        modelEdition.allOrganizations.forEachHead(
+            modelEdition.modelId,
             orgId => {
                 result.push({
                     id: orgId,
-                    name: this.model.currentEdition.names.get(orgId)!,
-                    summary: this.model.currentEdition.summaries.get(orgId),
-                    description: this.model.currentEdition.descriptions.get(orgId),
+                    name: modelEdition.names.get(orgId)!,
+                    summary: modelEdition.summaries.get(orgId),
+                    description: modelEdition.descriptions.get(orgId),
                 })
-            })
+            }
+        )
 
         result.sort((o1, o2) => o1.name.localeCompare(o2.name))
         return result
