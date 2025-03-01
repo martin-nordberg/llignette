@@ -1,7 +1,6 @@
 import {createId} from '@paralleldrive/cuid2'
 import {Branded} from "$shared/util/Branded";
 import {Named, NamedId, namedIdSchema} from "$shared/llignette/nodes/core/Named";
-import {OrganizationId} from "$shared/llignette/nodes/structure/Organization";
 
 
 /** Branded type for a project ID. */
@@ -9,6 +8,11 @@ export type ProjectId = NamedId & Branded<string, 'Project'>
 
 /** The prefix for a project ID. */
 const projectIdPrefix = 'prj'
+
+/** Tests whether an ID is a project ID. */
+export function isProjectId(id: string) {
+    return id.startsWith(projectIdPrefix)
+}
 
 /** Validates the format of a project ID. */
 const projectIdSchema =
@@ -29,7 +33,5 @@ export function makeProjectId() {
 export type Project = Named & {
     /** The unique ID of the project. */
     readonly id: ProjectId
-
-    readonly parentOrganizationId: OrganizationId
 }
 

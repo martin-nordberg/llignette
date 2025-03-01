@@ -29,7 +29,5 @@ export function makeModuleId() {
 export type Module = Named & {
     /** The unique ID of the module. */
     readonly id: ModuleId
-
-    readonly parentPackageId: PackageId
 }
 

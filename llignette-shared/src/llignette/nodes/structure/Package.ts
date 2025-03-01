@@ -28,7 +28,5 @@ export function makePackageId() {
 export type Package = Named & {
     /** The unique ID of the package. */
     readonly id: PackageId
-
-    readonly parentPackageId: PackageId
 }
 

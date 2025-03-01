@@ -9,6 +9,11 @@ export type OrganizationId = NamedId & Branded<string, 'Organization'>
 /** The prefix for an organization ID. */
 const organizationIdPrefix = 'org'
 
+/** Tests whether an ID is an organization ID. */
+export function isOrganizationId(id: string) {
+    return id.startsWith(organizationIdPrefix)
+}
+
 /** Validates the format of an organization ID. */
 const organizationIdSchema = namedIdSchema
     .startsWith(`${organizationIdPrefix}`, `Organization ID must start with prefix '${organizationIdPrefix}'.`)

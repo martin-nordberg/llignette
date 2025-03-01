@@ -1,0 +1,21 @@
+
+.logo {
+}
+
+.title {
+    font-size: 100%;
+    margin-right: 30px;
+}
+
+.titlebar {
+    line-height: 60%;
+    padding-left:10px;
+    padding-right: 10px;
+}
+
+.titlebar li {
+    line-height: 60%;
+    padding-top:10px;
+    padding-bottom: 10px;
+}
+
