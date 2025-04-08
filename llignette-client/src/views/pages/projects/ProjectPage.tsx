@@ -1,19 +1,21 @@
 import {Component} from "solid-js";
 
-import {activeModelService} from "../../../model/activeModel";
 import {toProjectId} from "$shared/llignette/nodes/structure/Project";
 import {useParams} from "@solidjs/router";
+import NameTextInput from "../../components/editing/NameTextInput";
+import SummaryTextInput from "../../components/editing/SummaryTextInput";
+import DescriptionTextArea from "../../components/editing/DescriptionTextArea";
 
 const ProjectPage: Component = () => {
     const projectId = toProjectId(useParams().id)
-    const project = activeModelService.projectsService.queryProjectById(projectId)
 
     return (
         <>
-            <h1>{project?.name}</h1>
-            <p>{project?.summary}</p>
+            <NameTextInput id={projectId} placeholder="Project"/>
+            <SummaryTextInput id={projectId} placeholder="Project"/>
+            <DescriptionTextArea id={projectId} placeholder="Project"/>
         </>
-    );
-};
+    )
+}
 
 export default ProjectPage;

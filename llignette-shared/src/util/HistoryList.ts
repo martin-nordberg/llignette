@@ -1,5 +1,5 @@
 /**
- * A link in a singly linked list.
+ * A link in a singly linked list where the head of the list is the newest item.
  */
 export type HistoryList<T> = {
     readonly item: T,
@@ -7,11 +7,11 @@ export type HistoryList<T> = {
 }
 
 /**
- * Adds a new link to the start of a history list.
+ * Adds a new item to the start of a history list.
  * @param histList the history list to add to.
  * @param itemToAdd the element being added
  */
-export function addLink<T>(
+export function addToHistory<T>(
     histList: HistoryList<T> | null,
     itemToAdd: T
 ): HistoryList<T> {

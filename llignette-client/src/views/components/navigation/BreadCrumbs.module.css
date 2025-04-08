@@ -1,7 +1,15 @@
 
+.editLink:hover {
+    background-color: #0ccece;
+}
+
+.editLinkInverse {
+    background-color: #0ab1b1;
+}
+
 .nav {
     line-height: 60%;
-    padding-left:10px;
+    padding-left: 10px;
     padding-right: 10px;
 }
 

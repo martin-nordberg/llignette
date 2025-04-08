@@ -2,7 +2,8 @@
 import {render} from 'solid-js/web';
 
 import './assets/css/pico.cyan.min.css';
-import './index.css';
+import './assets/css/pico-customizations.css';
+import '@fortawesome/fontawesome-free/css/all.min.css'
 
 import {Route, Router} from "@solidjs/router";
 import {lazy} from "solid-js";
@@ -26,7 +27,7 @@ const ProjectPage = lazy(() => import("./views/pages/projects/ProjectPage"))
 render(() => (
     <Router root={LlignetteLayout}>
         <Route path="/" component={OrganizationsPage}/>
-        <Route path="/:id" component={OrganizationPage} matchFilters={{id:isOrganizationId}}/>
-        <Route path="/:id" component={ProjectPage} matchFilters={{id:isProjectId}}/>
+        <Route path="/:id" component={OrganizationPage} matchFilters={{id: isOrganizationId}}/>
+        <Route path="/:id" component={ProjectPage} matchFilters={{id: isProjectId}}/>
     </Router>
 ), root!)

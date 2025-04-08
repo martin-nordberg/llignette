@@ -24,16 +24,36 @@ function createProject(
         priorEdition.projectIds.add(tx, change.id)
         priorEdition.names.set(tx, change.id, change.name)
         priorEdition.projectOwnerships.add(tx, change.organizationId, change.id)
+        console.debug(`Project named '${change.name}' created.`)
     })
 }
 
 
-/** Removes one or more projects. */
-function removeProject(
+/** Creates one or more project dependencies. */
+function createProjectDependency(
     tx: Tx,
     priorEdition: ModelEdition,
     action: ModelAction<
-        'llignette.structure.project.remove',
+        'llignette.structure.project.dependency.create',
+        {
+            consumerId: ProjectId,
+            supplierId: ProjectId,
+        }
+    >
+) {
+    action.changes.forEach(change => {
+        priorEdition.projectDependencies.add(tx, change.consumerId, change.supplierId)
+        console.debug(`Project dependency created from ID='${change.consumerId}' to ID='${change.supplierId}.`)
+    })
+}
+
+
+/** Deletes one or more projects. */
+function deleteProject(
+    tx: Tx,
+    priorEdition: ModelEdition,
+    action: ModelAction<
+        'llignette.structure.project.delete',
         {
             id: ProjectId,
         }
@@ -43,33 +63,17 @@ function removeProject(
         // TODO: delete contents & links
         priorEdition.projectIds.delete(tx, change.id)
         priorEdition.projectOwnerships.delete(tx, change.id)
+        console.debug(`Project with ID='${change.id}' deleted.`)
     })
 }
 
 
-/** Creates one or more project dependencies. */
-function addProjectDependency(
+/** Deletes one or more project dependencies. */
+function deleteProjectDependency(
     tx: Tx,
     priorEdition: ModelEdition,
     action: ModelAction<
-        'llignette.structure.project.add-dependency',
-        {
-            consumerId: ProjectId,
-            supplierId: ProjectId,
-        }
-    >
-) {
-    action.changes.forEach(change => {
-        priorEdition.projectDependencies.add(tx, change.consumerId, change.supplierId)
-    })
-}
-
-/** Removes one or more project dependencies. */
-function removeProjectDependency(
-    tx: Tx,
-    priorEdition: ModelEdition,
-    action: ModelAction<
-        'llignette.structure.project.remove-dependency',
+        'llignette.structure.project.dependency.delete',
         {
             consumerId: ProjectId,
             supplierId: ProjectId,
@@ -78,6 +82,7 @@ function removeProjectDependency(
 ) {
     action.changes.forEach(change => {
         priorEdition.projectDependencies.delete(tx, change.consumerId, change.supplierId)
+        console.debug(`Project dependency from ID='${change.consumerId}' to ID='${change.supplierId}' deleted.`)
     })
 }
 
@@ -97,8 +102,8 @@ export function dispatchProjectAction(tx: Tx, priorEdition: ModelEdition, action
                 })
             })
             break
-        case 'llignette.structure.project.add-dependency':
-            addProjectDependency(tx, priorEdition, {
+        case 'llignette.structure.project.dependency.create':
+            createProjectDependency(tx, priorEdition, {
                 kind: action.kind,
                 changes: action.changes.map(c => {
                     return {
@@ -108,8 +113,8 @@ export function dispatchProjectAction(tx: Tx, priorEdition: ModelEdition, action
                 })
             })
             break
-        case 'llignette.structure.project.remove':
-            removeProject(tx, priorEdition, {
+        case 'llignette.structure.project.delete':
+            deleteProject(tx, priorEdition, {
                 kind: action.kind,
                 changes: action.changes.map(c => {
                     return {
@@ -119,8 +124,8 @@ export function dispatchProjectAction(tx: Tx, priorEdition: ModelEdition, action
 
             })
             break
-        case 'llignette.structure.project.remove-dependency':
-            removeProjectDependency(tx, priorEdition, {
+        case 'llignette.structure.project.dependency.delete':
+            deleteProjectDependency(tx, priorEdition, {
                 kind: action.kind,
                 changes: action.changes.map(c => {
                     return {

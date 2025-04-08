@@ -6,7 +6,7 @@ import {ModelEdition} from "$shared/llignette/model/ModelEdition";
 import {Tx} from "$shared/util/txcollections/Tx";
 
 
-/** Create one or more organizations. */
+/** Creates one or more organizations. */
 function createOrganization(
     tx: Tx,
     priorEdition: ModelEdition,
@@ -22,16 +22,17 @@ function createOrganization(
         priorEdition.organizationIds.add(tx, change.id)
         priorEdition.names.set(tx, change.id, change.name)
         priorEdition.allOrganizations.add(tx, priorEdition.modelId, change.id)
+        console.debug(`Organization named '${change.name}' created.`)
     })
 }
 
 
 /** Deletes one or more organizations. */
-function removeOrganization(
+function deleteOrganization(
     tx: Tx,
     priorEdition: ModelEdition,
     action: ModelAction<
-        'llignette.structure.organization.remove',
+        'llignette.structure.organization.delete',
         {
             id: OrganizationId,
         }
@@ -41,6 +42,7 @@ function removeOrganization(
         // TODO: delete contents & links
         priorEdition.allOrganizations.delete(tx, change.id)
         priorEdition.organizationIds.delete(tx, change.id)
+        console.debug(`Organization with ID='${change.id}' deleted.`)
     })
 }
 
@@ -59,8 +61,8 @@ export function dispatchOrganizationAction(tx: Tx, priorEdition: ModelEdition, a
                 }),
             })
             break
-        case 'llignette.structure.organization.remove':
-            removeOrganization(tx, priorEdition, {
+        case 'llignette.structure.organization.delete':
+            deleteOrganization(tx, priorEdition, {
                 kind: action.kind,
                 changes: action.changes.map(c => {
                     return {

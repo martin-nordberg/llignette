@@ -1,4 +1,8 @@
-/**0002**/
+
+.addButton {
+    padding-top: 0;
+    padding-bottom: 0;
+}
 
 .table {
     composes: table from '../../../../src/assets/css/tables.modules.css';

@@ -6,24 +6,25 @@ import {isOrganizationId, toOrganizationId} from "$shared/llignette/nodes/struct
 import {activeModelService} from "../../../model/activeModel";
 import {isProjectId, toProjectId} from "$shared/llignette/nodes/structure/Project";
 import {Named} from "$shared/llignette/nodes/core/Named";
+import EntityLink from "./EntityLink";
+import uiState, {toggleEditing} from "../../state/UiState";
 
-type NamedLink = {
-    url?: string | undefined,
-    text: string,
+type Crumb = {
+    text?: string
+    entity?: Named
 }
 
-const makeLink = (node: Named | null) =>
-    ({url: `/${node?.id}`, text: node?.name ?? "Unknown Organization"})
+const makeLinkCrumb = (entity: Named | null) =>
+    (entity ? {entity} : {text: "Unknown entity"})
 
+const makeTextCrumb = (entity: Named | null) =>
+    ({text: entity?.name ?? "Unknown entity"})
 
-const makeNonLink = (node: Named | null) =>
-    ({text: node?.name ?? "Unknown Organization"})
-
-const makeLinks = (params: Params) =>
+const makeCrumbs = (params: Params) =>
     () => {
         const {id} = params
 
-        const result: NamedLink[] = []
+        const result: Crumb[] = []
 
         if (id == null) {
             return result
@@ -31,14 +32,14 @@ const makeLinks = (params: Params) =>
 
         if (isOrganizationId(id)) {
             const organizationId = toOrganizationId(id)
-            const organization = activeModelService.organizationsService.queryOrganizationById(organizationId);
-            result.push(makeNonLink(organization))
+            const organization = activeModelService.findOrganizationById(organizationId);
+            result.push(makeTextCrumb(organization))
         } else if (isProjectId(id)) {
             const projectId = toProjectId(id)
-            const organization = activeModelService.organizationsService.queryOrganizationByProjectId(projectId)
-            result.push(makeLink(organization))
-            const project = activeModelService.projectsService.queryProjectById(projectId)
-            result.push(makeNonLink(project))
+            const organization = activeModelService.findOrganizationByProjectId(projectId)
+            result.push(makeLinkCrumb(organization))
+            const project = activeModelService.findProjectById(projectId)
+            result.push(makeTextCrumb(project))
         }
 
         return result
@@ -46,25 +47,32 @@ const makeLinks = (params: Params) =>
 
 const BreadCrumbs: Component = () => {
 
-    const links = makeLinks(useParams())
+    const crumbs = makeCrumbs(useParams())
 
     return (
         <nav aria-label="breadcrumb" class={css.nav}>
             <ul>
                 <li><a href="/">Llignette</a></li>
 
-                <For each={links()}>
-                    {(link) => (
+                <For each={crumbs()}>
+                    {(crumb) => (
                         <>
-                            <Show when={link.url}>
-                                <li><a href={link.url}>{link.text}</a></li>
+                            <Show when={crumb.entity}>
+                                <li><EntityLink entity={crumb.entity!} tooltipLocation="bottom"></EntityLink></li>
                             </Show>
-                            <Show when={!link.url}>
-                                <li>{link.text}</li>
+                            <Show when={crumb.text}>
+                                <li>{crumb.text}</li>
                             </Show>
                         </>
                     )}
                 </For>
+
+                <li>
+                    <a class={css.editLink} classList={{[css.editLinkInverse]: uiState.editing}}
+                       data-tooltip="Toggle edit mode (F2)" data-placement="bottom" onclick={toggleEditing}>
+                        <i class={`fa-solid fa-pencil fa-sm`} classList={{["fa-inverse"]: uiState.editing}}></i>
+                    </a>
+                </li>
             </ul>
         </nav>
     )

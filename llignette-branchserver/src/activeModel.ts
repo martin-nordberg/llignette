@@ -2,10 +2,8 @@ import {makeEmptyModel} from "$shared/llignette/model/Model";
 import {makeTx} from "$shared/util/txcollections/Tx";
 import {toModelId} from "$shared/llignette/model/ModelId";
 import {makeOrganizationId} from "$shared/llignette/nodes/structure/Organization";
-import {IModelService} from "$shared/llignette/services/ModelService";
-import {OrganizationsService} from "$shared/llignette/services/structure/OrganizationsService";
+import {ModelService} from "$shared/llignette/services/ModelService";
 import {extendModelOnBranch} from "$shared/llignette/model/dispatchAction";
-import {ProjectsService} from "$shared/llignette/services/structure/ProjectsService";
 
 
 export let activeModel = makeEmptyModel(makeTx(), toModelId('mdl0'))
@@ -35,8 +33,7 @@ activeModel = extendModelOnBranch(
 )
 
 
-export const activeModelService: IModelService = {
-    organizationsService: new OrganizationsService(activeModel, "main"),
-    projectsService: new ProjectsService(activeModel, "main")
-}
+export let activeModelService: new ModelService
+(activeModel, "main")
+
 

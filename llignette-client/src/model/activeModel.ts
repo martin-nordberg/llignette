@@ -2,10 +2,8 @@ import {makeEmptyModel} from "$shared/llignette/model/Model";
 import {makeTx} from "$shared/util/txcollections/Tx";
 import {toModelId} from "$shared/llignette/model/ModelId";
 import {makeOrganizationId} from "$shared/llignette/nodes/structure/Organization";
-import {IModelService} from "$shared/llignette/services/ModelService";
-import {OrganizationsService} from "$shared/llignette/services/structure/OrganizationsService";
+import {ModelService} from "$shared/llignette/services/ModelService";
 import {extendModelOnBranch} from "$shared/llignette/model/dispatchAction";
-import {ProjectsService} from "$shared/llignette/services/structure/ProjectsService";
 import {makeProjectId} from "$shared/llignette/nodes/structure/Project";
 
 
@@ -84,9 +82,28 @@ activeModel = extendModelOnBranch(
     }
 )
 
+activeModel = extendModelOnBranch(
+    makeTx(),
+    activeModel,
+    "main",
+    {
+        kind: 'llignette.core.describe',
+        changes: [
+            {
+                id: orgA,
+                description: "It can be described as the first.\nIt can also be described as the best."
+            }, {
+                id: prjA1,
+                description: "This project is very interesting.\nIt is described by these words."
+            }
+        ]
+    }
+)
 
-export const activeModelService: IModelService = {
-    organizationsService: new OrganizationsService(activeModel, "main"),
-    projectsService: new ProjectsService(activeModel, "main")
+
+export let activeModelService: ModelService = new ModelService(activeModel, "main")
+
+// TODO: store or better custom mechanism
+export function updateActiveModelService(model: ModelService) {
+    activeModelService = model
 }
-

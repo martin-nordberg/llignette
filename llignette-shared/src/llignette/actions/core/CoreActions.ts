@@ -27,6 +27,7 @@ function describe(
 ) {
     action.changes.forEach(change => {
         priorEdition.descriptions.set(tx, change.id, change.description)
+        console.debug(`Element with ID='${change.id}' description changed to '${change.description}'.`)
     })
 }
 
@@ -44,6 +45,7 @@ function removeDescription(
 ) {
     action.changes.forEach(change => {
         priorEdition.descriptions.delete(tx, change.id)
+        console.debug(`Element with ID='${change.id}' description removed.`)
     })
 }
 
@@ -61,6 +63,7 @@ function removeSummary(
 ) {
     action.changes.forEach(change => {
         priorEdition.summaries.delete(tx, change.id)
+        console.debug(`Element with ID='${change.id}' summary removed.`)
     })
 }
 
@@ -79,6 +82,7 @@ function rename(
 ) {
     action.changes.forEach(change => {
         priorEdition.names.set(tx, change.id, change.name)
+        console.debug(`Element with ID='${change.id}' renamed to '${change.name}'.`)
     })
 }
 
@@ -97,6 +101,7 @@ function summarize(
 ) {
     action.changes.forEach(change => {
         priorEdition.summaries.set(tx, change.id, change.summary)
+        console.debug(`Element with ID='${change.id}' summary changed to '${change.summary}'.`)
     })
 }
 

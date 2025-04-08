@@ -3,7 +3,7 @@ import {ModelBranch} from "$shared/llignette/model/ModelBranch";
 import {ModelActionJson} from "$shared/llignette/model/ModelAction";
 import {dispatchModelAction} from "$shared/llignette/actions/dispatchModelAction";
 import {commitChanges} from "$shared/llignette/model/ModelEdition";
-import {addLink} from "$shared/util/HistoryList";
+import {addToHistory} from "$shared/util/HistoryList";
 import {Model} from "$shared/llignette/model/Model";
 import {fail} from "$shared/util/Assertions";
 
@@ -14,7 +14,7 @@ function extendBranch(tx: Tx, branch: ModelBranch, action: ModelActionJson): Mod
     dispatchModelAction(tx, latestEdition, action)
     return {
         ...branch,
-        editions: addLink(branch.editions, commitChanges(tx, latestEdition)),
+        editions: addToHistory(branch.editions, commitChanges(tx, latestEdition)),
     }
 }
 

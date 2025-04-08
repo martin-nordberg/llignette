@@ -6,7 +6,7 @@ import {ModelBranch} from "$shared/llignette/model/ModelBranch";
 import {Instant} from "@js-joda/core";
 
 /**
- * One edition in the evolution of a versioned map.
+ * A dictionary of branches by branch name.
  */
 export type BranchMap = {
     [key: string]: ModelBranch
@@ -41,7 +41,7 @@ export function makeEmptyModel(tx: Tx, modelId: ModelId): Model {
 
     return {
         branches: {
-            main: branch0,
+            [branch0.name]: branch0,
         },
         commits: [commit0]
     }

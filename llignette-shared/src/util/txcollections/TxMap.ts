@@ -130,8 +130,6 @@ export class TxMap<K extends string, V> {
         // If not changed just return the same version
         if (!this.next) {
             return this
-        } else {
-            check(this.next.tx === tx, () => "Another transaction is already in progress.")
         }
 
         check(this.next.tx === tx, () => "A different transaction is in progress.")
